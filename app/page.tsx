@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Navbar from "./components/navbar/page";
+
 import { Search, Star } from "lucide-react";
 
 // Assets
@@ -7,7 +7,9 @@ import mainImage from "./assets/images/main-section.png";
 import himalayanLodge from "./assets/images/himlayan-eco-resort.jpg";
 import barauliLodge from "./assets/images/barauli.jpg";
 import organicFarmstay from "./assets/images/organic-farm.jpg";
-import Footer from "./components/footer/page";
+import Navbar from "./components/navbar/Navbar";
+import Footer from "./components/footer/Footer";
+
 const DESTINATIONS = [
   {
     id: 1,
