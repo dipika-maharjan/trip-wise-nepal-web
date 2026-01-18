@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Eye } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterData, registerSchema } from "../schema";
 import { useRouter } from "next/navigation";
+import { handleRegister } from "@/lib/actions/auth-action";
 
 export default function RegisterForm() {
   const router = useRouter();
-
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [pending, startTransition] = useTransition();
 
   const {
     register,
@@ -20,6 +22,7 @@ export default function RegisterForm() {
   } = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -27,8 +30,18 @@ export default function RegisterForm() {
   });
 
   const onSubmit = async (data: RegisterData) => {
-    console.log("Registered:", data);
-    router.push("/login");
+    setError("");
+    try {
+      const res = await handleRegister(data);
+      if (!res.success) {
+        throw new Error(res.message || "Registration failed");
+      }
+      startTransition(() => {
+        router.push("/login");
+      });
+    } catch (err: Error | any) {
+      setError(err.message || "Registration failed");
+    }
   };
 
   return (
@@ -36,6 +49,7 @@ export default function RegisterForm() {
       <h2 className="text-[#134e4a] text-xl font-semibold py-5 text-center">
         Create a new account
       </h2>
+      {error && <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Name */}
         <div className="space-y-1">

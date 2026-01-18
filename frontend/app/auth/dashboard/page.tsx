@@ -45,7 +45,7 @@ export default function Dashboard() {
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-2xl font-bold text-gray-800">
-            Welcome back, Traveler 👋
+            Welcome back, Traveler 
           </h1>
           <p className="text-gray-500 mt-1">
             Discover destinations curated just for you.

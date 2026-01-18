@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye} from "lucide-react";
-import { LoginData, loginSchema } from "../schema"; 
+import { LoginData, loginSchema } from "../schema";
+import { handleLogin } from "@/lib/actions/auth-action";
 
 export default function LoginForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [pending, startTransition] = useTransition();
 
   const {
     register,
@@ -21,8 +24,18 @@ export default function LoginForm() {
   });
 
   const onSubmit = async (data: LoginData) => {
-    alert(`Logged in with email: ${data.email}`);
-    router.push("/auth/dashboard");
+    setError("");
+    try {
+      const res = await handleLogin(data);
+      if (!res.success) {
+        throw new Error(res.message || "Login failed");
+      }
+      startTransition(() => {
+        router.push("/auth/dashboard");
+      });
+    } catch (err: Error | any) {
+      setError(err.message || "Login failed");
+    }
   };
 
   return (
@@ -30,6 +43,7 @@ export default function LoginForm() {
       <h2 className="text-[#134e4a] text-xl font-semibold py-5 text-center">
         Login to your account
       </h2>
+      {error && <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Email field */}
         <div className="space-y-1">
