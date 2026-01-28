@@ -1,4 +1,4 @@
-import { CreateUserDTO, LoginUserDTO } from "../dtos/user.dto";
+import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from "../dtos/user.dto";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import {JWT_SECRET} from "../config/index";
@@ -42,5 +42,32 @@ export class UserService{
         }
         const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' }); // 30 days
         return { token, user }
+    }
+
+    async getUserById(userId: string){
+        const user = await userRepository.getUserById(userId);
+        if(!user){
+            throw new HttpError(404, "User not found");
+        }
+        return user;
+    }
+
+    async updateUser(userId: string, data: UpdateUserDTO) {
+        const user = await userRepository.getUserById(userId);
+        if (!user) {
+            throw new HttpError(404, "User not found");
+        }
+        if(user.email !== data.email){
+            const emailExists = await userRepository.getUserByEmail(data.email!);
+            if(emailExists){
+                throw new HttpError(403, "Email already in use");
+            }
+        }
+        if(data.password){
+            const hashedPassword = await bcryptjs.hash(data.password, 10);
+            data.password = hashedPassword;
+        }
+        const updatedUser = await userRepository.updateUser(userId, data);
+        return updatedUser;
     }
 }
