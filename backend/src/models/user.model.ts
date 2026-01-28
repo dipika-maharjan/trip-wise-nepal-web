@@ -10,7 +10,8 @@ const UserSchema: Schema = new Schema<UserType>(
             type: String,
             enum: ['user', 'admin'],
             default: 'user',
-        }
+        },
+        imageUrl: { type: String, required: false},
     },
     {
         timestamps: true,
