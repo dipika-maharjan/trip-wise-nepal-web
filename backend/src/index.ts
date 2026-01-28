@@ -4,13 +4,12 @@ import { connectDatabase } from './database/mongodb';
 import authRoutes from './routes/auth.route';
 import cors from 'cors';
 import path from 'path/win32';
+import {adminUserRoutes} from './routes/admin/user.route';
 
 const app: Application = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/api/auth', authRoutes);
-app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); //serve static files (images)
 
 
 let corsOptions = {
@@ -18,6 +17,10 @@ let corsOptions = {
 }
 
 app.use(cors(corsOptions));
+
+app.use('/api/auth', authRoutes);
+app.use('/api/admin/users', adminUserRoutes);
+app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); //serve static files (images)
 
 
 async function startServer(){
