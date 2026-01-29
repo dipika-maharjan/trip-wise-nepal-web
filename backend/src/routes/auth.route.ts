@@ -16,5 +16,11 @@ router.put(
     uploads.single('image'),   
     authController.updateProfile
 );
+router.put(
+    '/:id',
+    authorizedMiddleware,
+    uploads.single('image'),
+    authController.updateUserById
+);
 
 export default router;

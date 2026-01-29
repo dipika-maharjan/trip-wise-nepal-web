@@ -35,8 +35,11 @@ export class AuthController {
             }
             const loginData: LoginUserDTO = parsedData.data;
             const { token, user } = await userService.loginUser(loginData);
+            // Ensure imageUrl is always present and also provide as profilePicture for frontend
+            let userObj = user.toObject ? user.toObject() : { ...user };
+            userObj.profilePicture = userObj.imageUrl || "default-profile.png";
             return res.status(200).json(
-                { success: true, message: "Login successful", data: user, token }
+                { success: true, message: "Login successful", data: userObj, token }
             );
 
         } catch (error: Error | any) {
@@ -80,11 +83,43 @@ export class AuthController {
                 ); // z.prettifyError - better error messages (zod)
             }
             if(req.file){
-                parsedData.data.imageUrl = `/uploads/${req.file.filename}`;
+                parsedData.data.imageUrl = req.file.filename;
+            } else if (!parsedData.data.imageUrl) {
+                parsedData.data.imageUrl = "default-profile.png";
             }
             const updatedUser = await userService.updateUser(userId, parsedData.data);
             return res.status(200).json(
                 { success: true, data: updatedUser, message: "User profile updated successfully" }
+            );
+        }catch(error: Error | any){
+            return res.status(error.statusCode || 500).json(
+                { success: false, message: error.message || "Internal Server Error" }
+            );
+        }
+    }
+
+    async updateUserById(req: Request, res: Response) {
+        try{
+            const userId = req.params.id;
+            if(!userId){
+                return res.status(400).json(
+                    { success: false, message: "User Id Not found" }
+                );
+            }
+            const parsedData = UpdateUserDTO.safeParse(req.body);
+            if (!parsedData.success) {
+                return res.status(400).json(
+                    { success: false, message: z.prettifyError(parsedData.error) }
+                );
+            }
+            if(req.file){
+                parsedData.data.imageUrl = req.file.filename;
+            } else if (!parsedData.data.imageUrl) {
+                parsedData.data.imageUrl = "default-profile.png";
+            }
+            const updatedUser = await userService.updateUser(userId, parsedData.data);
+            return res.status(200).json(
+                { success: true, data: updatedUser, message: "User updated successfully" }
             );
         }catch(error: Error | any){
             return res.status(error.statusCode || 500).json(
