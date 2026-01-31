@@ -4,9 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye} from "lucide-react";
+import { Eye } from "lucide-react";
 import { LoginData, loginSchema } from "../schema";
 import { handleLogin } from "@/lib/actions/auth-action";
+import { useAuth } from "@/app/components/AuthContext";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -23,6 +24,8 @@ export default function LoginForm() {
     defaultValues: { email: "", password: "" },
   });
 
+  const { setUser, setIsAuthenticated, checkAuth } = useAuth();
+
   const onSubmit = async (data: LoginData) => {
     setError("");
     try {
@@ -30,6 +33,7 @@ export default function LoginForm() {
       if (!res.success) {
         throw new Error(res.message || "Login failed");
       }
+      await checkAuth();
       startTransition(() => {
         router.push("/auth/dashboard");
       });
@@ -43,23 +47,33 @@ export default function LoginForm() {
       <h2 className="text-[#134e4a] text-xl font-semibold py-5 text-center">
         Login to your account
       </h2>
-      {error && <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>}
+      {error && (
+        <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Email field */}
         <div className="space-y-1">
-          <label className="text-sm font-semibold text-gray-700">Email Address</label>
+          <label className="text-sm font-semibold text-gray-700">
+            Email Address
+          </label>
           <input
             type="email"
             placeholder="Enter your email address"
             className="w-full px-4 py-3 rounded-xl border border-blue-100 bg-green-50/30 focus:outline-none focus:ring-2 focus:ring-[#00a884]/20 transition-all text-sm"
             {...register("email")}
           />
-          {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
+          {errors.email && (
+            <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
+          )}
         </div>
 
         {/* Password field */}
         <div className="space-y-1">
-          <label className="text-sm font-semibold text-gray-700">Password</label>
+          <label className="text-sm font-semibold text-gray-700">
+            Password
+          </label>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -75,11 +89,17 @@ export default function LoginForm() {
               <Eye size={18} />
             </button>
           </div>
-          {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
+          {errors.password && (
+            <p className="text-xs text-red-500 mt-1">
+              {errors.password.message}
+            </p>
+          )}
         </div>
 
         <div className="text-right">
-          <a href="#" className="text-xs text-gray-500 hover:text-[#00a884]">Forgot Password?</a>
+          <a href="#" className="text-xs text-gray-500 hover:text-[#00a884]">
+            Forgot Password?
+          </a>
         </div>
 
         <button
@@ -93,7 +113,9 @@ export default function LoginForm() {
 
       <p className="mt-8 text-center text-sm font-medium">
         Don't have an account?{" "}
-        <a href="/register" className="text-[#00a884] font-bold">Signup</a>
+        <a href="/register" className="text-[#00a884] font-bold">
+          Signup
+        </a>
       </p>
     </div>
   );
