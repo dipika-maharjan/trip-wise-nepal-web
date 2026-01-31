@@ -1,12 +1,38 @@
+"use client";
+
+import { useAuth } from "@/app/components/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import Navbar from "@/app/components/navbar/Navbar";
 import Image from "next/image";
 import { MapPin, Star } from "lucide-react";
-
 import himalayanLodge from "../../assets/images/himlayan-eco-resort.jpg";
 import barauliLodge from "../../assets/images/barauli.jpg";
 import organicFarmstay from "../../assets/images/organic-farm.jpg";
-
 export default function Dashboard() {
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, loading, router]);
+
+  if (loading) {
+    return (
+      <div>
+        <Navbar />
+        <div className="text-center py-10">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    // Optionally render nothing or a spinner while redirecting
+    return null;
+  }
+
   const DESTINATIONS = [
     {
       id: 1,
@@ -57,7 +83,6 @@ export default function Dashboard() {
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
             Recommended stays
           </h2>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {DESTINATIONS.map((place) => (
               <div
