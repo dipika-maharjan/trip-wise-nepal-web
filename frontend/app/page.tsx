@@ -1,12 +1,14 @@
+"use client";
+
 import Image from "next/image";
 
 import { Search, Star } from "lucide-react";
 
 // Assets
-import mainImage from "./assets/images/main-section.png";
-import himalayanLodge from "./assets/images/himlayan-eco-resort.jpg";
-import barauliLodge from "./assets/images/barauli.jpg";
-import organicFarmstay from "./assets/images/organic-farm.jpg";
+import mainImage from "../public/images/main-section.png";
+import himalayanLodge from "../public/images/himlayan-eco-resort.jpg";
+import barauliLodge from "../public/images/barauli.jpg";
+import organicFarmstay from "../public/images/organic-farm.jpg";
 import Navbar from "./components/navbar/Navbar";
 import Footer from "./components/footer/Footer";
 

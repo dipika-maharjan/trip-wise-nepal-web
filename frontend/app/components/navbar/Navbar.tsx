@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import logo from "../../assets/images/logo.png";
-import { useAuth } from "../AuthContext";
+import logo from "../../../public/images/logo.png";
+import { useAuth } from "../../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 
@@ -41,12 +41,27 @@ export default function Navbar() {
         <Link href="/bookings" className="hover:text-black">Bookings</Link>
         {isAuthenticated ? (
           <div className="relative ml-4" ref={dropdownRef}>
-            <img
-              src={user?.imageUrl ? `http://localhost:5050/uploads/${user.imageUrl}` : "/default-profile.png"}
-              alt="Profile"
-              className="w-10 h-10 rounded-full object-cover border-2 border-[#0c7272] cursor-pointer transition-shadow shadow-sm hover:shadow-lg"
-              onClick={() => setDropdownOpen((open) => !open)}
-            />
+            {user?.imageUrl ? (
+              <img
+                src={
+                  user.imageUrl.startsWith("http")
+                    ? user.imageUrl
+                    : user.imageUrl.startsWith("/")
+                      ? `http://localhost:5050${user.imageUrl}`
+                      : `http://localhost:5050/uploads/${user.imageUrl}`
+                }
+                alt="Profile"
+                className="w-10 h-10 rounded-full object-cover border-2 border-[#0c7272] cursor-pointer transition-shadow shadow-sm hover:shadow-lg"
+                onClick={() => setDropdownOpen((open) => !open)}
+              />
+            ) : (
+              <div
+                className="w-10 h-10 rounded-full border-2 border-[#0c7272] bg-[#0c7272] text-white flex items-center justify-center cursor-pointer font-bold text-xs"
+                onClick={() => setDropdownOpen((open) => !open)}
+              >
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </div>
+            )}
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                 <button
