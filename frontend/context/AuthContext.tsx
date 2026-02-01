@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             await clearAuthCookies();
             setIsAuthenticated(false);
             setUser(null);
-            router.push("/"); // Redirect to homepage
+            router.push("/login");
         } catch (error) {
             console.error("Logout failed:", error);
         }

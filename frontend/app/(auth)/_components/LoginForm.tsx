@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye } from "lucide-react";
 import { LoginData, loginSchema } from "../schema";
 import { handleLogin } from "@/lib/actions/auth-action";
-import { useAuth } from "@/app/components/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -34,8 +34,13 @@ export default function LoginForm() {
         throw new Error(res.message || "Login failed");
       }
       await checkAuth();
+      // Redirect based on user role
       startTransition(() => {
-        router.push("/auth/dashboard");
+        if (res.data?.role === "admin") {
+          router.push("/admin/users");
+        } else {
+          router.push("/user/dashboard");
+        }
       });
     } catch (err: Error | any) {
       setError(err.message || "Login failed");

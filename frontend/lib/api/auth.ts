@@ -40,3 +40,21 @@ export const loginUser = async(loginData: any) => {
         );
     }
 }
+
+export const updateProfile = async (profileData: any) => {
+  try {
+    const response = await axios.put(
+      API.AUTH.UPDATE_PROFILE,
+      profileData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data', // for file upload/multer
+        }
+      }
+    );
+    return response.data;
+  } catch (error: Error | any) {
+    throw new Error(error.response?.data?.message
+      || error.message || 'Update profile failed');
+  }
+}

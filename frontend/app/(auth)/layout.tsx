@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { EarthIcon } from "lucide-react";
-import logo from "../assets/images/logo.png";
+import logo from "../../public/images/logo.png";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
