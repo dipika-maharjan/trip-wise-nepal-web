@@ -12,9 +12,11 @@ export default function Header() {
                     {/* Left: Logo & Title */}
                     <div className="flex items-center gap-3">
                         <Link href="/admin" className="flex items-center gap-2 group">
-                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-foreground text-background font-semibold">
-                                A
-                            </span>
+                            <img 
+                                src="/images/logo.png" 
+                                alt="TripWise Nepal Logo" 
+                                className="h-10 w-10 object-contain"
+                            />
                             <span className="text-base font-semibold tracking-tight group-hover:opacity-80 transition-opacity">
                                 Admin Panel
                             </span>

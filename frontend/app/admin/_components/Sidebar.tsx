@@ -26,7 +26,11 @@ export default function Sidebar() {
             >
                 <div className="p-4 border-b border-gray-200 dark:border-gray-800">
                     <Link href="/admin" className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded bg-gray-900 dark:bg-white text-white dark:text-gray-900 flex items-center justify-center font-bold">A</div>
+                        <img
+                            src="/images/logo.png"
+                            alt="TripWise Nepal Logo"
+                            className="h-8 w-8 object-contain"
+                        />
                         <span className="font-semibold">Admin Panel</span>
                     </Link>
                 </div>
