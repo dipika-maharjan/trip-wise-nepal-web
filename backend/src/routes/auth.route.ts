@@ -8,6 +8,7 @@ const router = Router();
 
 router.post("/register", authController.register);
 router.post("/login", authController.login);
+router.post("/user", uploads.single("image"), authController.createUserWithImage);
 
 router.get('/profile', authorizedMiddleware, authController.getProfile);
 router.put(

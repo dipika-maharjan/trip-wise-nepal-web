@@ -5,6 +5,29 @@ import z from "zod";
 
 let userService = new UserService();
 export class AuthController {
+    async createUserWithImage(req: Request, res: Response) {
+        try {
+            const parsedData = CreateUserDTO.safeParse(req.body);
+            if (!parsedData.success) {
+                return res.status(400).json(
+                    { success: false, message: z.prettifyError(parsedData.error) }
+                );
+            }
+            let userData: CreateUserDTO & { imageUrl?: string } = parsedData.data;
+            if (req.file) {
+                userData = { ...userData, imageUrl: `/uploads/${req.file.filename}` };
+            }
+            const newUser = await userService.createUser(userData);
+            return res.status(201).json(
+                { success: true, message: "User Created", data: newUser }
+            );
+        } catch (error: Error | any) {
+            return res.status(error.statusCode ?? 500).json(
+                { success: false, message: error.message || "Internal Server Error" }
+            );
+        }
+    }
+
     async register(req: Request, res: Response) {
         try {
             const parsedData = CreateUserDTO.safeParse(req.body); 

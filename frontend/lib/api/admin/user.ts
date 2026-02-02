@@ -6,7 +6,7 @@ export const createUser = async (userData: FormData) => {
     try {
         const token = await getAuthToken();
         const response = await axios.post(
-            API.ADMIN.USER.CREATE,
+            API.AUTH.CREATE_USER,
             userData,
             {
                 headers: {
