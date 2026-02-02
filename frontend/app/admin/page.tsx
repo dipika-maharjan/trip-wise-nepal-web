@@ -53,12 +53,9 @@ export default function AdminDashboard() {
                     <div className="relative z-10">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome back, {user?.name}! 👋</h1>
+                                <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome back, {user?.name}!</h1>
                             </div>
                             <div className="hidden lg:block">
-                                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 border border-white/30">
-                                    <TrendingUp size={36} className="text-white" />
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -69,10 +66,10 @@ export default function AdminDashboard() {
                     {/* Total Users Card */}
                     <div className="bg-white rounded-2xl p-5 shadow-md border-l-4 border-[#0c7272] hover:shadow-lg transition-all duration-300 group">
                         <div className="flex items-start justify-between mb-4">
-                            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-xl group-hover:scale-110 transition-transform">
-                                <Users className="text-blue-600" size={26} />
+                            <div className="bg-gradient-to-br from-[#0c7272]/10 to-[#0c7272]/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                <Users className="text-[#0c7272]" size={26} />
                             </div>
-                            <span className="text-[11px] font-semibold px-2.5 py-1 bg-blue-50 text-blue-600 rounded-full">
+                            <span className="text-[11px] font-semibold px-2.5 py-1 bg-[#0c7272]/10 text-[#0c7272] rounded-full">
                                 Total
                             </span>
                         </div>
@@ -85,12 +82,12 @@ export default function AdminDashboard() {
 
 
                     {/* Admin Users Card */}
-                    <div className="bg-white rounded-2xl p-5 shadow-md border-l-4 border-purple-500 hover:shadow-lg transition-all duration-300 group">
+                    <div className="bg-white rounded-2xl p-5 shadow-md border-l-4 border-[#0c7272] hover:shadow-lg transition-all duration-300 group">
                         <div className="flex items-start justify-between mb-4">
-                            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-3 rounded-xl group-hover:scale-110 transition-transform">
-                                <Shield className="text-purple-600" size={26} />
+                            <div className="bg-gradient-to-br from-[#0c7272]/10 to-[#0c7272]/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                <Shield className="text-[#0c7272]" size={26} />
                             </div>
-                            <span className="text-[11px] font-semibold px-2.5 py-1 bg-purple-50 text-purple-600 rounded-full">
+                            <span className="text-[11px] font-semibold px-2.5 py-1 bg-[#0c7272]/10 text-[#0c7272] rounded-full">
                                 Admin
                             </span>
                         </div>
