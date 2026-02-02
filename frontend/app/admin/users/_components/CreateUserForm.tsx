@@ -103,20 +103,33 @@ export default function CreateUserForm() {
             </div>
             {/* Profile Image Input */}
             <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Profile Image</label>
+                <label className="block text-sm font-medium mb-2">Profile Image</label>
                 <Controller
                     name="image"
                     control={control}
                     render={({ field: { onChange } }) => (
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            onChange={(e) => handleImageChange(e.target.files?.[0], onChange)}
-                            accept=".jpg,.jpeg,.png,.webp"
-                        />
+                        <div className="relative">
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                onChange={(e) => handleImageChange(e.target.files?.[0], onChange)}
+                                accept=".jpg,.jpeg,.png,.webp"
+                                className="hidden"
+                                id="profile-image-input"
+                            />
+                            <label
+                                htmlFor="profile-image-input"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-[#0c7272]/10 text-[#0c7272] rounded-lg border-2 border-dashed border-[#0c7272]/30 hover:bg-[#0c7272]/20 hover:border-[#0c7272] transition-all cursor-pointer text-sm font-medium"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                Upload Image
+                            </label>
+                        </div>
                     )}
                 />
-                {errors.image && <p className="text-sm text-red-600">{errors.image.message}</p>}
+                {errors.image && <p className="text-sm text-red-600 mt-1">{errors.image.message}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -128,7 +141,7 @@ export default function CreateUserForm() {
                         autoComplete="given-name"
                         className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
                         {...register("firstName")}
-                        placeholder="Jane"
+                        placeholder="First Name"
                     />
                     {errors.firstName?.message && (
                         <p className="text-xs text-red-600">{errors.firstName.message}</p>
@@ -143,7 +156,7 @@ export default function CreateUserForm() {
                         autoComplete="family-name"
                         className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
                         {...register("lastName")}
-                        placeholder="Doe"
+                        placeholder="Last Name"
                     />
                     {errors.lastName?.message && (
                         <p className="text-xs text-red-600">{errors.lastName.message}</p>
@@ -174,7 +187,7 @@ export default function CreateUserForm() {
                     autoComplete="username"
                     className="h-10 w-full rounded-md border border-black/10 dark:border-white/15 bg-background px-3 text-sm outline-none focus:border-foreground/40"
                     {...register("username")}
-                    placeholder="Jane Doe"
+                    placeholder="Username"
                 />
                 {errors.username?.message && (
                     <p className="text-xs text-red-600">{errors.username.message}</p>
@@ -213,7 +226,7 @@ export default function CreateUserForm() {
             <button
                 type="submit"
                 disabled={isSubmitting || pending}
-                className="h-10 w-full rounded-md bg-foreground text-background text-sm font-semibold hover:opacity-90 disabled:opacity-60"
+                className="h-10 w-full rounded-md bg-[#0c7272] text-white text-sm font-semibold hover:bg-[#0a5555] disabled:opacity-60 transition-colors"
             >
                 {isSubmitting || pending ? "Creating account..." : "Create account"}
             </button>
