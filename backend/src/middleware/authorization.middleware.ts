@@ -18,7 +18,6 @@ let userRepository = new UserRepository();
 export const authorizedMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     try{
         const authHeader = req.headers.authorization;
-        console.log(authHeader)
         if(!authHeader || !authHeader.startsWith('Bearer ')){
             throw new HttpError(401, "Unauthorized, Header malformed");
         }
