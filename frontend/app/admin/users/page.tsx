@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getAllUsers, deleteUser } from "@/lib/api/admin/user";
 import { toast } from "react-toastify";
-import { Pencil, Trash2, Eye, Plus } from "lucide-react";
+import { Pencil, Trash2, Eye, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -17,10 +17,21 @@ interface User {
     createdAt: string;
 }
 
+interface Pagination {
+    page: number;
+    size: number;
+    total: number;
+    totalPages: number;
+}
+
 export default function UsersPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [pagination, setPagination] = useState<Pagination | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
     const { user, isAuthenticated, loading: authLoading } = useAuth();
     const router = useRouter();
 
@@ -35,15 +46,18 @@ export default function UsersPage() {
 
     useEffect(() => {
         if (isAuthenticated && user?.role === "admin") {
-            fetchUsers();
+            fetchUsers(currentPage, pageSize, search);
         }
-    }, [isAuthenticated, user]);
+    }, [isAuthenticated, user, currentPage, pageSize, search]);
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (page: number, size: number, searchTerm: string) => {
         try {
-            const response = await getAllUsers();
+            setLoading(true);
+            const response = await getAllUsers(page, size, searchTerm || undefined);
             if (response.success) {
                 setUsers(response.data);
+                setPagination(response.pagination);
+                setError("");
             }
         } catch (err: any) {
             setError(err.message || "Failed to fetch users");
@@ -61,14 +75,30 @@ export default function UsersPage() {
             const response = await deleteUser(userId);
             if (response.success) {
                 toast.success("User deleted successfully");
-                fetchUsers(); // Refresh the list
+                // Refresh the list
+                if (users.length === 1 && currentPage > 1) {
+                    setCurrentPage(currentPage - 1);
+                } else {
+                    fetchUsers(currentPage, pageSize, search);
+                }
             }
         } catch (err: any) {
             toast.error(err.message || "Failed to delete user");
         }
     };
 
-    if (loading) {
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= (pagination?.totalPages || 1)) {
+            setCurrentPage(newPage);
+        }
+    };
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearch(e.target.value);
+        setCurrentPage(1);
+    };
+
+    if (loading && users.length === 0) {
         return <div className="text-center py-10">Loading users...</div>;
     }
 
@@ -92,6 +122,17 @@ export default function UsersPage() {
                     {error}
                 </div>
             )}
+
+            {/* Search */}
+            <div className="bg-white rounded-lg shadow p-4">
+                <input
+                    type="text"
+                    placeholder="Search by name, email, or username..."
+                    value={search}
+                    onChange={handleSearch}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0c7272]"
+                />
+            </div>
 
             {/* Users Table */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -191,6 +232,48 @@ export default function UsersPage() {
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination */}
+            {pagination && (
+                <div className="bg-white rounded-lg shadow p-4 flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                        Showing {(pagination.page - 1) * pagination.size + 1} to{" "}
+                        {Math.min(pagination.page * pagination.size, pagination.total)} of{" "}
+                        {pagination.total} users
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        >
+                            <ChevronLeft size={18} />
+                        </button>
+                        <div className="flex items-center gap-1">
+                            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                                <button
+                                    key={page}
+                                    onClick={() => handlePageChange(page)}
+                                    className={`px-3 py-1 rounded-lg transition ${
+                                        currentPage === page
+                                            ? "bg-[#0c7272] text-white"
+                                            : "border border-gray-300 hover:bg-gray-50"
+                                    }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === pagination.totalPages}
+                            className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        >
+                            <ChevronRight size={18} />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
