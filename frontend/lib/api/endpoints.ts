@@ -6,6 +6,8 @@ export const API = {
     LOGIN: "api/auth/login",
     CREATE_USER: "api/auth/user",
     UPDATE_PROFILE: "api/auth", // PUT /api/auth/:id
+    REQUEST_PASSWORD_RESET: '/api/auth/request-password-reset',
+        RESET_PASSWORD: (token: string) => `/api/auth/reset-password/${token}`,
   },
   ADMIN: {
     USER: {
