@@ -22,10 +22,16 @@ export const createUser = async (userData: FormData) => {
     }
 }
 
-export const getAllUsers = async () => {
+export const getAllUsers = async (page?: number, size?: number, search?: string) => {
     try {
         const token = await getAuthToken();
-        const response = await axios.get(API.ADMIN.USER.GET_ALL, {
+        const params = new URLSearchParams();
+        if (page) params.append('page', page.toString());
+        if (size) params.append('size', size.toString());
+        if (search) params.append('search', search);
+        
+        const query = params.toString() ? `?${params.toString()}` : '';
+        const response = await axios.get(`${API.ADMIN.USER.GET_ALL}${query}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
             }

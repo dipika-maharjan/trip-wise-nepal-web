@@ -24,6 +24,20 @@ export class AdminUserService {
         return users;
     }
 
+    async getAllUsersPaginated({ page, size, search }: { page?: string | undefined, size?: string | undefined, search?: string | undefined }) {
+        const currentPage = page ? parseInt(page) : 1;
+        const currentSize = size ? parseInt(size) : 10;
+        const currentSearch = search || "";
+        const { users, totalUsers } = await userRepository.getAllUsersPaginated({ page: currentPage, size: currentSize, search: currentSearch });
+        const pagination = {
+            page: currentPage,
+            size: currentSize,
+            total: totalUsers,
+            totalPages: Math.ceil(totalUsers / currentSize),
+        };
+        return { users, pagination };
+    }
+
     async deleteUser(id: string){
         const user = await userRepository.getUserById(id);
         if(!user){
