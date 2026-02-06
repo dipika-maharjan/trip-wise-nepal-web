@@ -14,6 +14,7 @@ export default function UserProfile() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -61,6 +62,7 @@ export default function UserProfile() {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
+      setRemoveImage(false);
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -68,6 +70,12 @@ export default function UserProfile() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setRemoveImage(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,6 +91,9 @@ export default function UserProfile() {
       
       if (imageFile) {
         data.append("image", imageFile);
+      }
+      if (removeImage) {
+        data.append("removeImage", "true");
       }
 
       const result = await handleUpdateProfile(user._id, data);
@@ -122,6 +133,7 @@ export default function UserProfile() {
       }
     }
     setImageFile(null);
+    setRemoveImage(false);
     setIsEditing(false);
     setError("");
     setSuccess("");
@@ -198,9 +210,29 @@ export default function UserProfile() {
                 )}
               </div>
               {isEditing && (
-                <p className="text-sm text-gray-500 mt-2">
-                  Click the icon to upload a new profile picture
-                </p>
+                <div className="mt-4 flex flex-col items-center gap-3">
+                  <p className="text-sm text-gray-500">
+                    Click the icon to upload a new profile picture
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById("image-upload")?.click()}
+                      className="px-4 py-2 text-sm font-medium border border-[#0c7272] text-[#0c7272] rounded-lg hover:bg-[#0c7272]/10 transition"
+                    >
+                      Change Photo
+                    </button>
+                    {imagePreview && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="px-4 py-2 text-sm font-medium border border-red-500 text-red-600 rounded-lg hover:bg-red-50 transition"
+                      >
+                        Remove Photo
+                      </button>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
 
