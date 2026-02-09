@@ -18,4 +18,14 @@ export const API = {
       DELETE: "/api/admin/users", 
     },
   },
+  ACCOMMODATION: {
+    GET_ALL: "/api/accommodations",
+    GET_ACTIVE: "/api/accommodations/active",
+    GET_BY_ID: "/api/accommodations",
+    SEARCH: "/api/accommodations/search",
+    PRICE_RANGE: "/api/accommodations/price-range",
+    CREATE: "/api/accommodations",
+    UPDATE: "/api/accommodations",
+    DELETE: "/api/accommodations",
+  },
 };
