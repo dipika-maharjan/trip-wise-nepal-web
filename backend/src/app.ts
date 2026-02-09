@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.route';
 import cors from 'cors';
 import path from 'path/win32';
 import {adminUserRoutes} from './routes/admin/user.route';
+import accommodationRoutes from './routes/accommodation.route';
 
 const app: Application = express();
 
@@ -18,8 +19,15 @@ let corsOptions = {
 
 app.use(cors(corsOptions));
 
+app.get('/open-app', (req, res) => {
+  const token = req.query.token as string | undefined;
+  if (!token) return res.status(400).send('Missing token');
+  res.redirect(`tripwisenepal://reset-password?token=${token}`);
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/admin/users', adminUserRoutes);
+app.use('/api/accommodations', accommodationRoutes);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); //serve static files (images)
 
 export default app;
