@@ -6,9 +6,111 @@ import z from "zod";
 const accommodationService = new AccommodationService();
 
 export class AccommodationController {
-    async createAccommodation(req: Request, res: Response) {
+    private parseFormData = (body: any) => {
+        const parsed: any = { ...body };
+        
+        // Parse JSON string fields from FormData
+        if (parsed.location && typeof parsed.location === 'string') {
+            parsed.location = JSON.parse(parsed.location);
+        }
+        if (parsed.amenities && typeof parsed.amenities === 'string') {
+            try {
+                parsed.amenities = JSON.parse(parsed.amenities);
+            } catch (e) {
+                parsed.amenities = [];
+            }
+        }
+        if (parsed.ecoFriendlyHighlights && typeof parsed.ecoFriendlyHighlights === 'string') {
+            try {
+                parsed.ecoFriendlyHighlights = JSON.parse(parsed.ecoFriendlyHighlights);
+            } catch (e) {
+                parsed.ecoFriendlyHighlights = [];
+            }
+        }
+        
+        // Handle images - can be string, array of strings, or array with JSON at end
+        if (parsed.images) {
+            if (typeof parsed.images === 'string') {
+                try {
+                    const parsedImages = JSON.parse(parsed.images);
+                    // Ensure it's always an array of strings
+                    if (Array.isArray(parsedImages)) {
+                        parsed.images = parsedImages.filter((img: any) => typeof img === 'string' && img.trim() !== '');
+                    } else {
+                        // If parsed to non-array, set to empty array
+                        parsed.images = [];
+                    }
+                } catch (e) {
+                    // If parsing fails, treat as a single URL string
+                    parsed.images = parsed.images.trim() ? [parsed.images] : [];
+                }
+            } else if (Array.isArray(parsed.images)) {
+                parsed.images = parsed.images.flatMap((img: any) => {
+                    if (typeof img === 'string') {
+                        try {
+                            // Try to parse as JSON first (array of URLs)
+                            const parsed_img = JSON.parse(img);
+                            if (Array.isArray(parsed_img)) {
+                                return parsed_img.filter((i: any) => typeof i === 'string' && i.trim() !== '');
+                            }
+                            return [];
+                        } catch (e) {
+                            // If not JSON, treat as URL string
+                            return img.trim() ? [img] : [];
+                        }
+                    }
+                    return [];
+                }).filter((img: any) => typeof img === 'string' && img.trim() !== '');
+            } else {
+                // If images is neither string nor array, set to empty array
+                parsed.images = [];
+            }
+        } else {
+            // If images field doesn't exist, set to empty array
+            parsed.images = [];
+        }
+        
+        // Convert price to number
+        if (parsed.pricePerNight && typeof parsed.pricePerNight === 'string') {
+            parsed.pricePerNight = Number(parsed.pricePerNight);
+        }
+        
+        // Convert boolean fields
+        if (parsed.isActive && typeof parsed.isActive === 'string') {
+            parsed.isActive = parsed.isActive === 'true';
+        }
+        
+        // Final safety check: ensure images is always an array of strings
+        if (!Array.isArray(parsed.images)) {
+            parsed.images = [];
+        }
+        parsed.images = parsed.images.filter((img: any) => 
+            typeof img === 'string' && img.trim() !== ''
+        );
+        
+        // Final safety check: ensure amenities is always an array of strings
+        if (!Array.isArray(parsed.amenities)) {
+            parsed.amenities = [];
+        }
+        parsed.amenities = parsed.amenities.filter((item: any) => 
+            typeof item === 'string' && item.trim() !== ''
+        );
+        
+        // Final safety check: ensure ecoFriendlyHighlights is always an array of strings
+        if (!Array.isArray(parsed.ecoFriendlyHighlights)) {
+            parsed.ecoFriendlyHighlights = [];
+        }
+        parsed.ecoFriendlyHighlights = parsed.ecoFriendlyHighlights.filter((item: any) => 
+            typeof item === 'string' && item.trim() !== ''
+        );
+        
+        return parsed;
+    };
+
+    createAccommodation = async (req: Request, res: Response) => {
         try {
-            const parseData = CreateAccommodationDTO.safeParse(req.body);
+            const parsedBody = this.parseFormData(req.body);
+            const parseData = CreateAccommodationDTO.safeParse(parsedBody);
             if (!parseData.success) {
                 return res.status(400).json({
                     success: false,
@@ -24,8 +126,23 @@ export class AccommodationController {
                 });
             }
 
+            // Handle uploaded images
+            const uploadedImages = (req.files as Express.Multer.File[])?.map(
+                (file) => `/uploads/${file.filename}`
+            ) || [];
+            
+            // Merge uploaded images with URL-based images from body
+            const existingImages = parseData.data.images || [];
+            const allImages = [...uploadedImages, ...existingImages];
+
+            console.log('Creating accommodation with images:');
+            console.log('Uploaded images:', uploadedImages);
+            console.log('Existing images from body:', existingImages);
+            console.log('All images:', allImages);
+
             const newAccommodation = await accommodationService.createAccommodation({
                 ...parseData.data,
+                images: allImages,
                 createdBy: adminId,
             });
             return res.status(201).json({
@@ -41,10 +158,12 @@ export class AccommodationController {
         }
     }
 
-    async getAccommodationById(req: Request, res: Response) {
+    getAccommodationById = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
             const accommodation = await accommodationService.getAccommodationById(id);
+            console.log('Fetching accommodation by ID:', id);
+            console.log('Accommodation images:', accommodation.images);
             return res.status(200).json({
                 success: true,
                 data: accommodation,
@@ -55,11 +174,15 @@ export class AccommodationController {
                 message: error.message || "Internal server error",
             });
         }
-    }
+    };
 
-    async getAllAccommodations(req: Request, res: Response) {
+    getAllAccommodations = async (req: Request, res: Response) => {
         try {
             const accommodations = await accommodationService.getAllAccommodations();
+            console.log('Fetching all accommodations, count:', accommodations.length);
+            if (accommodations.length > 0) {
+                console.log('First accommodation images:', accommodations[0].images);
+            }
             return res.status(200).json({
                 success: true,
                 data: accommodations,
@@ -70,9 +193,9 @@ export class AccommodationController {
                 message: error.message || "Internal server error",
             });
         }
-    }
+    };
 
-    async getActiveAccommodations(req: Request, res: Response) {
+    getActiveAccommodations = async (req: Request, res: Response) => {
         try {
             const accommodations = await accommodationService.getActiveAccommodations();
             return res.status(200).json({
@@ -85,12 +208,13 @@ export class AccommodationController {
                 message: error.message || "Internal server error",
             });
         }
-    }
+    };
 
-    async updateAccommodation(req: Request, res: Response) {
+    updateAccommodation = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
-            const parseData = UpdateAccommodationDTO.safeParse(req.body);
+            const parsedBody = this.parseFormData(req.body);
+            const parseData = UpdateAccommodationDTO.safeParse(parsedBody);
             if (!parseData.success) {
                 return res.status(400).json({
                     success: false,
@@ -98,9 +222,23 @@ export class AccommodationController {
                 });
             }
 
+            // Handle uploaded images
+            const uploadedImages = (req.files as Express.Multer.File[])?.map(
+                (file) => `/uploads/${file.filename}`
+            ) || [];
+            
+            // Merge uploaded images with existing URL-based images from body
+            const existingImages = parseData.data.images || [];
+            const allImages = uploadedImages.length > 0 || existingImages.length > 0 
+                ? [...uploadedImages, ...existingImages] 
+                : undefined;
+
             const updatedAccommodation = await accommodationService.updateAccommodation(
                 id,
-                parseData.data
+                {
+                    ...parseData.data,
+                    ...(allImages && { images: allImages })
+                }
             );
             return res.status(200).json({
                 success: true,
@@ -113,9 +251,9 @@ export class AccommodationController {
                 message: error.message || "Internal server error",
             });
         }
-    }
+    };
 
-    async deleteAccommodation(req: Request, res: Response) {
+    deleteAccommodation = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
             const result = await accommodationService.deleteAccommodation(id);
@@ -129,9 +267,9 @@ export class AccommodationController {
                 message: error.message || "Internal server error",
             });
         }
-    }
+    };
 
-    async searchAccommodations(req: Request, res: Response) {
+    searchAccommodations = async (req: Request, res: Response) => {
         try {
             const { query } = req.query;
             if (!query || typeof query !== "string") {
@@ -151,9 +289,9 @@ export class AccommodationController {
                 message: error.message || "Internal server error",
             });
         }
-    }
+    };
 
-    async getAccommodationsByPrice(req: Request, res: Response) {
+    getAccommodationsByPrice = async (req: Request, res: Response) => {
         try {
             const { minPrice, maxPrice } = req.query;
             if (!minPrice || !maxPrice) {
@@ -176,5 +314,5 @@ export class AccommodationController {
                 message: error.message || "Internal server error",
             });
         }
-    }
+    };
 }
