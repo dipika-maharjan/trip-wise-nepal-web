@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getAllAccommodationsAdmin, deleteAccommodation } from "@/lib/api/admin/accommodation";
 import { toast } from "react-toastify";
-import { Pencil, Trash2, Eye, Plus } from "lucide-react";
+import { Pencil, Trash2, Eye, Plus, Search } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -24,8 +24,23 @@ export default function AdminAccommodationsPage() {
     const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
     const { user, isAuthenticated, loading: authLoading } = useAuth();
     const router = useRouter();
+
+    // Filter accommodations based on search query
+    const filteredAccommodations = accommodations.filter((acc) => 
+        acc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        acc.address.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Calculate pagination
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentAccommodations = filteredAccommodations.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredAccommodations.length / itemsPerPage);
 
     // Check if user is admin
     useEffect(() => {
@@ -72,6 +87,8 @@ export default function AdminAccommodationsPage() {
             const response = await deleteAccommodation(accommodationId);
             if (response.success) {
                 toast.success("Accommodation deleted successfully");
+                setSearchQuery(""); // Clear search
+                setCurrentPage(1); // Reset to first page
                 fetchAccommodations();
             }
         } catch (err: any) {
@@ -86,15 +103,37 @@ export default function AdminAccommodationsPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                 <h1 className="text-2xl font-bold text-gray-800">Accommodation Management</h1>
                 <Link
                     href="/admin/accommodations/create"
-                    className="flex items-center gap-2 bg-[#0c7272] text-white px-4 py-2 rounded-lg hover:bg-[#0a5555] transition"
+                    className="flex items-center gap-2 bg-[#0c7272] text-white px-4 py-2 rounded-lg hover:bg-[#0a5555] transition w-fit"
                 >
                     <Plus size={20} />
                     Create Accommodation
                 </Link>
+            </div>
+
+            {/* Search Bar */}
+            <div className="bg-white p-4 rounded-lg shadow">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Search by name or address..."
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0c7272]/20"
+                        value={searchQuery}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            setCurrentPage(1); // Reset to first page when searching
+                        }}
+                    />
+                </div>
+                {searchQuery && (
+                    <p className="text-sm text-gray-600 mt-2">
+                        Found {filteredAccommodations.length} result{filteredAccommodations.length !== 1 ? 's' : ''} for "{searchQuery}"
+                    </p>
+                )}
             </div>
 
             {/* Error Message */}
@@ -153,14 +192,14 @@ export default function AdminAccommodationsPage() {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {accommodations.length === 0 ? (
+                        {currentAccommodations.length === 0 ? (
                             <tr>
                                 <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                                    No accommodations found. Create your first accommodation!
+                                    {searchQuery ? "No accommodations match your search" : "No accommodations found. Create your first accommodation!"}
                                 </td>
                             </tr>
                         ) : (
-                            accommodations.map((accommodation) => (
+                            currentAccommodations.map((accommodation) => (
                                 <tr key={accommodation._id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="h-16 w-16 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
@@ -237,7 +276,70 @@ export default function AdminAccommodationsPage() {
                         )}
                     </tbody>
                 </table>
+
+                {/* Table Footer with Pagination Info */}
+                {filteredAccommodations.length > 0 && (
+                    <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-600">
+                        <p>
+                            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredAccommodations.length)} of {filteredAccommodations.length} accommodation{filteredAccommodations.length !== 1 ? 's' : ''}
+                        </p>
+                        {totalPages > 1 && (
+                            <p>Page {currentPage} of {totalPages}</p>
+                        )}
+                    </div>
+                )}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2">
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+                    >
+                        Previous
+                    </button>
+                    
+                    <div className="flex gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                            if (
+                                page === 1 ||
+                                page === totalPages ||
+                                (page >= currentPage - 1 && page <= currentPage + 1)
+                            ) {
+                                return (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`px-3 py-2 rounded-lg text-sm transition ${
+                                            currentPage === page
+                                                ? 'bg-[#0c7272] text-white'
+                                                : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                );
+                            } else if (
+                                page === currentPage - 2 ||
+                                page === currentPage + 2
+                            ) {
+                                return <span key={page} className="px-2 py-2 text-gray-400">...</span>;
+                            }
+                            return null;
+                        })}
+                    </div>
+
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
