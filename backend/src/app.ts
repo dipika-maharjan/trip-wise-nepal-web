@@ -9,7 +9,17 @@ import accommodationRoutes from './routes/accommodation.route';
 
 const app: Application = express();
 
-app.use(express.json());
+// Configure JSON parser to skip multipart/form-data requests (handled by multer)
+app.use(express.json({ 
+    type: (req) => {
+        const contentType = (req.headers['content-type'] || '') as string;
+        // Skip multipart/form-data - let multer handle it
+        if (contentType.includes('multipart/form-data')) {
+            return false;
+        }
+        return true;
+    }
+}));
 app.use(express.urlencoded({ extended: true }));
 
 

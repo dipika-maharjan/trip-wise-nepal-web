@@ -12,18 +12,24 @@ if (!fs.existsSync(uploadDir)) {
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
+        console.log('Multer destination - file received:', file.fieldname, file.originalname);
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = uuidv4();
         const extension = path.extname(file.originalname);
-        cb(null, `${file.fieldname}-${uniqueSuffix}${extension}`);
+        const filename = `${file.fieldname}-${uniqueSuffix}${extension}`;
+        console.log('Multer filename assigned:', filename);
+        cb(null, filename);
     }
 });
 const fileFilter = (req: Express.Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    console.log('Multer fileFilter - checking file:', file.fieldname, file.mimetype);
     if (!file.mimetype.startsWith('image/')) {
+        console.log('Multer fileFilter - rejecting non-image:', file.mimetype);
         return cb(new Error('Only image files are allowed!'));
     }
+    console.log('Multer fileFilter - accepting file');
     cb(null, true);
 };
 const upload = multer({ 

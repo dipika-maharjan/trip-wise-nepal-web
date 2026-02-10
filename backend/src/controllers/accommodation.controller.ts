@@ -109,9 +109,24 @@ export class AccommodationController {
 
     createAccommodation = async (req: Request, res: Response) => {
         try {
+            console.log('=== CREATE ACCOMMODATION ===');
+            console.log('Request body keys:', Object.keys(req.body));
+            console.log('Request files present?', !!req.files);
+            console.log('Request files type:', typeof req.files);
+            console.log('Request files:', req.files);
+            const filesArray = Array.isArray(req.files) ? req.files : (req.files ? Object.values(req.files).flat() : []);
+            console.log('Files array:', filesArray);
+            console.log('Files count:', filesArray.length);
+            filesArray.forEach((file: any, idx: number) => {
+                console.log(`  File ${idx}:`, file.fieldname, file.originalname, file.filename, file.size);
+            });
+            
             const parsedBody = this.parseFormData(req.body);
+            console.log('Parsed body images:', parsedBody.images);
+            
             const parseData = CreateAccommodationDTO.safeParse(parsedBody);
             if (!parseData.success) {
+                console.log('Validation error:', z.prettifyError(parseData.error));
                 return res.status(400).json({
                     success: false,
                     message: z.prettifyError(parseData.error),
@@ -131,26 +146,30 @@ export class AccommodationController {
                 (file) => `/uploads/${file.filename}`
             ) || [];
             
+            console.log('Uploaded image paths:', uploadedImages);
+            
             // Merge uploaded images with URL-based images from body
             const existingImages = parseData.data.images || [];
+            console.log('Images from parsed body:', existingImages);
+            
             const allImages = [...uploadedImages, ...existingImages];
-
-            console.log('Creating accommodation with images:');
-            console.log('Uploaded images:', uploadedImages);
-            console.log('Existing images from body:', existingImages);
-            console.log('All images:', allImages);
+            console.log('Final merged images:', allImages);
 
             const newAccommodation = await accommodationService.createAccommodation({
                 ...parseData.data,
                 images: allImages,
                 createdBy: adminId,
             });
+            
+            console.log('Accommodation created with images:', newAccommodation.images);
+            
             return res.status(201).json({
                 success: true,
                 message: "Accommodation created successfully",
                 data: newAccommodation,
             });
         } catch (error: Error | any) {
+            console.log('Error creating accommodation:', error.message);
             return res.status(error.statusCode ?? 500).json({
                 success: false,
                 message: error.message || "Internal server error",
@@ -213,6 +232,15 @@ export class AccommodationController {
     updateAccommodation = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
+            console.log('=== UPDATE ACCOMMODATION ===');
+            console.log('Accommodation ID:', id);
+            console.log('Request files present?', !!req.files);
+            const filesArray = Array.isArray(req.files) ? req.files : (req.files ? Object.values(req.files).flat() : []);
+            console.log('Files count:', filesArray.length);
+            filesArray.forEach((file: any, idx: number) => {
+                console.log(`  File ${idx}:`, file.fieldname, file.originalname, file.filename);
+            });
+            
             const parsedBody = this.parseFormData(req.body);
             const parseData = UpdateAccommodationDTO.safeParse(parsedBody);
             if (!parseData.success) {
@@ -227,11 +255,17 @@ export class AccommodationController {
                 (file) => `/uploads/${file.filename}`
             ) || [];
             
+            console.log('Uploaded images:', uploadedImages);
+            
             // Merge uploaded images with existing URL-based images from body
             const existingImages = parseData.data.images || [];
+            console.log('Existing images from body:', existingImages);
+            
             const allImages = uploadedImages.length > 0 || existingImages.length > 0 
                 ? [...uploadedImages, ...existingImages] 
                 : undefined;
+            
+            console.log('Final images for update:', allImages);
 
             const updatedAccommodation = await accommodationService.updateAccommodation(
                 id,
