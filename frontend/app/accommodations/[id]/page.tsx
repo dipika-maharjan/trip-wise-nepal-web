@@ -97,7 +97,9 @@ export default function AccommodationDetailPage({ params }: { params: Promise<{ 
                     <div className="relative mb-8 rounded-lg overflow-hidden bg-gray-200">
                         <div className="relative h-64 sm:h-96">
                             <img
-                                src={accommodation.images[currentImageIndex]}
+                                src={accommodation.images[currentImageIndex].startsWith('http') 
+                                    ? accommodation.images[currentImageIndex] 
+                                    : `http://localhost:5050${accommodation.images[currentImageIndex]}`}
                                 alt={accommodation.name}
                                 className="w-full h-full object-cover"
                             />
@@ -226,7 +228,7 @@ export default function AccommodationDetailPage({ params }: { params: Promise<{ 
                                         <div className="flex items-center gap-2 text-gray-700">
                                             <Calendar size={18} />
                                             <span className="text-sm sm:text-base" suppressHydrationWarning>
-                                                <strong>Until:</strong> {new Date(accommodation.availableUntil).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                                <strong>To:</strong> {new Date(accommodation.availableUntil).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                                             </span>
                                         </div>
                                     )}
@@ -240,7 +242,7 @@ export default function AccommodationDetailPage({ params }: { params: Promise<{ 
                         <div className="border border-gray-300 rounded-lg p-6 sticky top-8 bg-white shadow-lg">
                             <div className="mb-6">
                                 <div className="flex items-baseline gap-2 mb-2">
-                                    <span className="text-3xl sm:text-4xl font-bold text-[#0c7272]">${accommodation.pricePerNight}</span>
+                                    <span className="text-3xl sm:text-4xl font-bold text-[#0c7272]">Rs. {accommodation.pricePerNight}</span>
                                     <span className="text-gray-600 text-sm sm:text-base">per night</span>
                                 </div>
                                 <div className="flex items-center gap-1 text-gray-600">
