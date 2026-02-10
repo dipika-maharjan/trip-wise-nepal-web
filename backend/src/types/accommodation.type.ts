@@ -20,7 +20,7 @@ export const AccommodationSchema = z.object({
     rating: z.number().min(0).max(5).optional(),
     totalReviews: z.number().optional(),
     availableFrom: z.coerce.date().optional(),
-    availableTo: z.coerce.date().optional(),
+    availableUntil: z.coerce.date().optional(),
     isActive: z.boolean().default(true),
     createdBy: z.union([
         z.string().min(1, "createdBy is required"),

@@ -14,7 +14,7 @@ export const CreateAccommodationDTO = AccommodationSchema.pick({
     bathrooms: true,
     location: true,
     availableFrom: true,
-    availableTo: true,
+    availableUntil: true,
     isActive: true,
 });
 
@@ -38,7 +38,7 @@ export const GetAccommodationDTO = AccommodationSchema.pick({
     rooms: true,
     bathrooms: true,
     availableFrom: true,
-    availableTo: true,
+    availableUntil: true,
     isActive: true,
     createdBy: true,
 });
