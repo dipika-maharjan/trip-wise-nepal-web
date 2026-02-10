@@ -25,7 +25,7 @@ const AccommodationSchema: Schema = new Schema<AccommodationDocument>(
         rating: { type: Number, default: 0, min: 0, max: 5 },
         totalReviews: { type: Number, default: 0 },
         availableFrom: Date,
-        availableTo: Date,
+        availableUntil: Date,
         isActive: { type: Boolean, default: true },
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
