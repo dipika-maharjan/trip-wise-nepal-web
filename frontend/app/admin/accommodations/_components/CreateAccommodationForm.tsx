@@ -166,6 +166,18 @@ export default function CreateAccommodationForm() {
                 formDataToSend.append('availableUntil', formData.availableUntil);
             }
 
+            // Log FormData contents for debugging
+            console.log('FormData entries before sending:');
+            for (let [key, value] of formDataToSend.entries()) {
+                if (value instanceof File) {
+                    console.log(`  ${key}: File(${value.name}, ${value.size} bytes)`);
+                } else {
+                    console.log(`  ${key}: ${value}`);
+                }
+            }
+            console.log('Image files count:', imageFiles.length);
+            console.log('Image URLs count:', filteredUrls.length);
+
             const response = await createAccommodation(formDataToSend);
             if (response.success) {
                 toast.success("Accommodation created successfully!");
