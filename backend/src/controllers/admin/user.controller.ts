@@ -16,7 +16,7 @@ export class AdminUserController {
             }
             let userData: any = parsedData.data;
             if(req.file){   
-                userData = { ...userData, imageUrl: `/uploads/${req.file.filename}` };
+                userData = { ...userData, imageUrl: req.file.filename };
             }
             const newUser = await adminUserService.createUser(userData);
             return res.status(201).json(
@@ -59,7 +59,7 @@ export class AdminUserController {
             
             let updateData: any = parsedData.data;
             if(req.file){   
-                updateData = { ...updateData, imageUrl: `/uploads/${req.file.filename}` };
+                updateData = { ...updateData, imageUrl: req.file.filename };
             }
             const updatedUser = await adminUserService.updateUser(userId, updateData);
             return res.status(200).json(
