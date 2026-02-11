@@ -155,7 +155,7 @@ export default function UserEditPage() {
                     <div className="flex flex-col items-center">
                         <div className="relative">
                             <img
-                                src={imagePreview || "/default-profile.png"}
+                                src={imagePreview || `http://localhost:5050/uploads/default-profile.png`}
                                 alt="Profile"
                                 className="w-32 h-32 rounded-full object-cover border-4 border-[#0c7272]"
                             />

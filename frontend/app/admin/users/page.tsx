@@ -172,7 +172,7 @@ export default function UsersPage() {
                                                 src={
                                                     user.imageUrl
                                                         ? `http://localhost:5050/uploads/${user.imageUrl}`
-                                                        : "/default-profile.png"
+                                                        : `http://localhost:5050/uploads/default-profile.png`
                                                 }
                                                 alt={user.name}
                                                 className="w-10 h-10 rounded-full object-cover"
