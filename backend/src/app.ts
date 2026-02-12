@@ -6,6 +6,9 @@ import cors from 'cors';
 import path from 'path/win32';
 import {adminUserRoutes} from './routes/admin/user.route';
 import accommodationRoutes from './routes/accommodation.route';
+import roomTypeRoutes from './routes/roomType.route';
+import optionalExtraRoutes from './routes/optionalExtra.route';
+import bookingRoutes from './routes/booking.route';
 
 const app: Application = express();
 
@@ -38,6 +41,9 @@ app.get('/open-app', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/admin/users', adminUserRoutes);
 app.use('/api/accommodations', accommodationRoutes);
+app.use('/api/room-types', roomTypeRoutes);
+app.use('/api/optional-extras', optionalExtraRoutes);
+app.use('/api/bookings', bookingRoutes);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); //serve static files (images)
 
 export default app;

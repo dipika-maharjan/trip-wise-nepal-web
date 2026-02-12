@@ -1,3 +1,4 @@
+import { ClientSession } from "mongoose";
 import { AccommodationModel, IAccommodation } from "../models/accommodation.model";
 import { CreateAccommodationDTO, UpdateAccommodationDTO } from "../dtos/accommodation.dto";
 
@@ -9,8 +10,8 @@ export class AccommodationRepository {
         return await accommodation.save();
     }
 
-    async getAccommodationById(id: string): Promise<IAccommodation | null> {
-        return await AccommodationModel.findById(id);
+    async getAccommodationById(id: string, session?: ClientSession): Promise<IAccommodation | null> {
+        return await AccommodationModel.findById(id).session(session ?? null);
     }
 
     async getAllAccommodations(filter?: any): Promise<IAccommodation[]> {
