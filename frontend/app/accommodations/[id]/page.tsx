@@ -242,8 +242,12 @@ export default function AccommodationDetailPage({ params }: { params: Promise<{ 
                         <div className="border border-gray-300 rounded-lg p-6 sticky top-8 bg-white shadow-lg">
                             <div className="mb-6">
                                 <div className="flex items-baseline gap-2 mb-2">
-                                    <span className="text-3xl sm:text-4xl font-bold text-[#0c7272]">Rs. {accommodation.pricePerNight}</span>
-                                    <span className="text-gray-600 text-sm sm:text-base">per night</span>
+                                    {accommodation.pricePerNight && accommodation.pricePerNight > 0 && (
+                                        <>
+                                            <span className="text-3xl sm:text-4xl font-bold text-[#0c7272]">Rs. {accommodation.pricePerNight}</span>
+                                            <span className="text-gray-600 text-sm sm:text-base">per night</span>
+                                        </>
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-1 text-gray-600">
                                     <Star className="text-yellow-400 fill-yellow-400" size={16} />
