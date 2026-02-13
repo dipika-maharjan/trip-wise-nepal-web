@@ -28,4 +28,28 @@ export const API = {
     UPDATE: "/api/accommodations",
     DELETE: "/api/accommodations",
   },
+  ROOM_TYPE: {
+    GET_ALL: "/api/room-types",
+    GET_BY_ID: "/api/room-types",
+    CREATE: "/api/room-types",
+    UPDATE: "/api/room-types",
+    DELETE: "/api/room-types",
+  },
+  OPTIONAL_EXTRA: {
+    GET_ALL: "/api/optional-extras",
+    GET_BY_ID: "/api/optional-extras",
+    CREATE: "/api/optional-extras",
+    UPDATE: "/api/optional-extras",
+    DELETE: "/api/optional-extras",
+  },
+  BOOKING: {
+    CREATE: "/api/bookings",
+    GET_ALL: "/api/bookings/all",
+    GET_MY_BOOKINGS: "/api/bookings/my-bookings",
+    GET_BY_ID: "/api/bookings",
+    CANCEL: "/api/bookings",
+    UPDATE_STATUS: "/api/bookings",
+    UPDATE: "/api/bookings",
+    DELETE: "/api/bookings",
+  },
 };
