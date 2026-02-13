@@ -12,7 +12,6 @@ interface Accommodation {
     _id: string;
     name: string;
     address: string;
-    pricePerNight: number;
     rating: number;
     totalReviews: number;
     isActive: boolean;
@@ -25,15 +24,17 @@ export default function AdminAccommodationsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
+    const [showInactive, setShowInactive] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     const { user, isAuthenticated, loading: authLoading } = useAuth();
     const router = useRouter();
 
-    // Filter accommodations based on search query
+    // Filter accommodations based on search query and active status
     const filteredAccommodations = accommodations.filter((acc) => 
-        acc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        acc.address.toLowerCase().includes(searchQuery.toLowerCase())
+        (showInactive || acc.isActive) &&
+        (acc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        acc.address.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     // Calculate pagination
@@ -136,6 +137,22 @@ export default function AdminAccommodationsPage() {
                 )}
             </div>
 
+            {/* Filter Toggle */}
+            <div className="bg-white p-4 rounded-lg shadow">
+                <label className="flex items-center gap-2 cursor-pointer w-fit">
+                    <input
+                        type="checkbox"
+                        checked={showInactive}
+                        onChange={(e) => {
+                            setShowInactive(e.target.checked);
+                            setCurrentPage(1);
+                        }}
+                        className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <span className="text-sm text-gray-700">Show Inactive Accommodations</span>
+                </label>
+            </div>
+
             {/* Error Message */}
             {error && (
                 <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
@@ -176,9 +193,6 @@ export default function AdminAccommodationsPage() {
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Address
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Price/Night
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Rating
@@ -227,13 +241,8 @@ export default function AdminAccommodationsPage() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900 font-semibold">
-                                            Rs. {accommodation.pricePerNight}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">
-                                            ⭐ {accommodation.rating.toFixed(1)} ({accommodation.totalReviews})
+                                            ⭐ {(accommodation.rating ?? 0).toFixed(1)} ({accommodation.totalReviews ?? 0})
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -279,67 +288,47 @@ export default function AdminAccommodationsPage() {
 
                 {/* Table Footer with Pagination Info */}
                 {filteredAccommodations.length > 0 && (
-                    <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-600">
-                        <p>
-                            Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredAccommodations.length)} of {filteredAccommodations.length} accommodation{filteredAccommodations.length !== 1 ? 's' : ''}
-                        </p>
-                        {totalPages > 1 && (
-                            <p>Page {currentPage} of {totalPages}</p>
-                        )}
+                    <div className="bg-white rounded-lg shadow p-4 flex items-center justify-between">
+                        <div className="text-sm text-gray-600">
+                            Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredAccommodations.length)} of {filteredAccommodations.length} accommodations
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setCurrentPage(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
+                            </button>
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`px-3 py-1 rounded-lg transition ${
+                                            currentPage === page
+                                                ? "bg-[#0c7272] text-white"
+                                                : "border border-gray-300 hover:bg-gray-50"
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                onClick={() => setCurrentPage(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
 
             {/* Pagination Controls */}
-            {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2">
-                    <button
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
-                    >
-                        Previous
-                    </button>
-                    
-                    <div className="flex gap-1">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                            if (
-                                page === 1 ||
-                                page === totalPages ||
-                                (page >= currentPage - 1 && page <= currentPage + 1)
-                            ) {
-                                return (
-                                    <button
-                                        key={page}
-                                        onClick={() => setCurrentPage(page)}
-                                        className={`px-3 py-2 rounded-lg text-sm transition ${
-                                            currentPage === page
-                                                ? 'bg-[#0c7272] text-white'
-                                                : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                                        }`}
-                                    >
-                                        {page}
-                                    </button>
-                                );
-                            } else if (
-                                page === currentPage - 2 ||
-                                page === currentPage + 2
-                            ) {
-                                return <span key={page} className="px-2 py-2 text-gray-400">...</span>;
-                            }
-                            return null;
-                        })}
-                    </div>
-
-                    <button
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
-                    >
-                        Next
-                    </button>
-                </div>
-            )}
+            {/* Pagination Controls removed: now handled in table footer above for consistency with user management */}
         </div>
     );
 }

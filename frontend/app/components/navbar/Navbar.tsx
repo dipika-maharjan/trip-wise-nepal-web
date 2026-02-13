@@ -38,7 +38,9 @@ export default function Navbar() {
       <div className="ml-auto flex items-center gap-8 text-sm font-medium text-[#0c7272]">
         <Link href="/" className="hover:text-black">Home</Link>
         <Link href="/accommodations" className="hover:text-black">Accommodations</Link>
-        <Link href="/bookings" className="hover:text-black">Bookings</Link>
+        {isAuthenticated && (
+          <Link href="/user/bookings" className="hover:text-black">My Bookings</Link>
+        )}
         {isAuthenticated ? (
           <div className="relative ml-4" ref={dropdownRef}>
             {user?.imageUrl ? (

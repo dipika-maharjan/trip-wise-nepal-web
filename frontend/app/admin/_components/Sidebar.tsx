@@ -7,6 +7,9 @@ const ADMIN_LINKS = [
     { href: "/admin", label: "Dashboard" },
     { href: "/admin/users", label: "Users" },
     { href: "/admin/accommodations", label: "Accommodations" },
+    { href: "/admin/room-types", label: "Room Types" },
+    { href: "/admin/optional-extras", label: "Optional Extras" },
+    { href: "/admin/bookings", label: "Bookings" },
 ];
 
 export default function Sidebar() {

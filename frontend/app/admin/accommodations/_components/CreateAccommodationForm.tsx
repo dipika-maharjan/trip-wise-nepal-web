@@ -15,7 +15,6 @@ export default function CreateAccommodationForm() {
         name: "",
         address: "",
         overview: "",
-        pricePerNight: "",
         lat: "",
         lng: "",
         mapUrl: "",
@@ -80,7 +79,7 @@ export default function CreateAccommodationForm() {
         e.preventDefault();
         
         // Validation
-        if (!formData.name || !formData.address || !formData.overview || !formData.pricePerNight) {
+        if (!formData.name || !formData.address || !formData.overview) {
             toast.error("Please fill in all required fields");
             return;
         }
@@ -131,7 +130,6 @@ export default function CreateAccommodationForm() {
             formDataToSend.append('name', formData.name);
             formDataToSend.append('address', formData.address);
             formDataToSend.append('overview', formData.overview);
-            formDataToSend.append('pricePerNight', formData.pricePerNight);
             formDataToSend.append('location', JSON.stringify({
                 lat: Number(formData.lat),
                 lng: Number(formData.lng),
@@ -254,22 +252,6 @@ export default function CreateAccommodationForm() {
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Price Per Night (Rs) <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="number"
-                            name="pricePerNight"
-                            value={formData.pricePerNight}
-                            onChange={handleInputChange}
-                            min="0"
-                            step="0.01"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0c7272]"
-                            placeholder="e.g. Rs 1000"
-                            required
-                        />
-                    </div>
                 </div>
 
                 {/* Location */}

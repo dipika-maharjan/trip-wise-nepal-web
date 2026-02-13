@@ -218,7 +218,7 @@ export default function AccommodationsPage() {
                                     className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100"
                                 >
                                     {/* Image */}
-                                    <div className="relative h-44 bg-gradient-to-br from-gray-200 to-gray-300 overflow-hidden">
+                                    <div className="relative h-44 bg-linear-to-br from-gray-200 to-gray-300 overflow-hidden">
                                         {accommodation.images && accommodation.images.length > 0 ? (
                                             <>
                                                 <img
@@ -250,17 +250,12 @@ export default function AccommodationsPage() {
                                             <span className="line-clamp-1">{accommodation.address}</span>
                                         </p>
                                         <p className="text-gray-600 text-xs mb-3 line-clamp-2 leading-relaxed">{accommodation.overview}</p>
-
-                                        {/* Rating and Price */}
+                                        {/* Rating */}
                                         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                                             <div className="flex items-center gap-1">
                                                 <Star className="text-yellow-400 fill-yellow-400" size={14} />
-                                                <span className="font-semibold text-sm text-gray-700">{accommodation.rating.toFixed(1)}</span>
-                                                <span className="text-gray-400 text-xs">({accommodation.totalReviews})</span>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-[#0c7272] font-bold text-base">Rs. {accommodation.pricePerNight.toLocaleString()}</p>
-                                                <p className="text-gray-400 text-xs">per night</p>
+                                                <span className="font-semibold text-sm text-gray-700">{accommodation.rating?.toFixed(1) ?? '-'}</span>
+                                                <span className="text-gray-400 text-xs">({accommodation.totalReviews ?? 0})</span>
                                             </div>
                                         </div>
                                     </div>
