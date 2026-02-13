@@ -8,7 +8,6 @@ export const AccommodationSchema = z.object({
     images: z.array(z.string()).default([]),
     amenities: z.array(z.string()).default([]),
     ecoFriendlyHighlights: z.array(z.string()).default([]),
-    pricePerNight: z.number().positive("Price must be positive"),
     maxGuests: z.number().optional(),
     rooms: z.number().optional(),
     bathrooms: z.number().optional(),

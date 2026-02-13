@@ -25,7 +25,7 @@ const BookingSchema: Schema = new Schema<BookingDocument>(
         specialRequest: { type: String },
         bookingStatus: {
             type: String,
-            enum: ["pending", "confirmed", "cancelled"],
+            enum: ["pending", "confirmed", "cancelled", "completed"],
             default: "pending",
         },
         paymentStatus: {

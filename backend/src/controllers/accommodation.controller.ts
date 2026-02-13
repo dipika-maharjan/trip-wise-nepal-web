@@ -76,7 +76,7 @@ export class AccommodationController {
         }
         
         // Convert boolean fields
-        if (parsed.isActive && typeof parsed.isActive === 'string') {
+        if (typeof parsed.isActive === 'string') {
             parsed.isActive = parsed.isActive === 'true';
         }
         
@@ -234,6 +234,11 @@ export class AccommodationController {
             const { id } = req.params;
             console.log('=== UPDATE ACCOMMODATION ===');
             console.log('Accommodation ID:', id);
+            console.log('Request body raw (selected fields):', {
+                name: req.body.name,
+                isActive: req.body.isActive,
+                isActiveType: typeof req.body.isActive,
+            });
             console.log('Request files present?', !!req.files);
             const filesArray = Array.isArray(req.files) ? req.files : (req.files ? Object.values(req.files).flat() : []);
             console.log('Files count:', filesArray.length);
@@ -242,14 +247,17 @@ export class AccommodationController {
             });
             
             const parsedBody = this.parseFormData(req.body);
+            console.log('Parsed isActive:', parsedBody.isActive, 'type:', typeof parsedBody.isActive);
             const parseData = UpdateAccommodationDTO.safeParse(parsedBody);
             if (!parseData.success) {
+                console.log('DTO validation error:', z.prettifyError(parseData.error));
                 return res.status(400).json({
                     success: false,
                     message: z.prettifyError(parseData.error),
                 });
             }
 
+            console.log('After DTO parse, isActive:', parseData.data.isActive);
             // Handle uploaded images
             const uploadedImages = (req.files as Express.Multer.File[])?.map(
                 (file) => `/uploads/${file.filename}`
@@ -266,6 +274,13 @@ export class AccommodationController {
                 : undefined;
             
             console.log('Final images for update:', allImages);
+            console.log('Calling updateAccommodation with:', {
+                isActive: parseData.data.isActive,
+                updatePayload: {
+                    ...parseData.data,
+                    ...(allImages && { images: allImages })
+                }
+            });
 
             const updatedAccommodation = await accommodationService.updateAccommodation(
                 id,
@@ -280,6 +295,7 @@ export class AccommodationController {
                 data: updatedAccommodation,
             });
         } catch (error: Error | any) {
+            console.log('Update error:', error.message);
             return res.status(error.statusCode ?? 500).json({
                 success: false,
                 message: error.message || "Internal server error",

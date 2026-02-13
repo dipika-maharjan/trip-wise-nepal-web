@@ -21,7 +21,7 @@ export class RoomTypeRepository {
     }
 
     async getAllRoomTypes(): Promise<IRoomType[]> {
-        return await RoomTypeModel.find({}).sort({ createdAt: -1 });
+        return await RoomTypeModel.find({}).populate("accommodationId").sort({ createdAt: -1 });
     }
 
     async updateRoomType(id: string, data: UpdateRoomTypeDTO): Promise<IRoomType | null> {

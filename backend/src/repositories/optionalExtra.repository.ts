@@ -21,7 +21,7 @@ export class OptionalExtraRepository {
     }
 
     async getAllOptionalExtras(): Promise<IOptionalExtra[]> {
-        return await OptionalExtraModel.find({}).sort({ createdAt: -1 });
+        return await OptionalExtraModel.find({}).populate("accommodationId").sort({ createdAt: -1 });
     }
 
     async updateOptionalExtra(id: string, data: UpdateOptionalExtraDTO): Promise<IOptionalExtra | null> {

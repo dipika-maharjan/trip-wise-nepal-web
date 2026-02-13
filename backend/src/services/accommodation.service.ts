@@ -1,8 +1,12 @@
 import { AccommodationRepository } from "../repositories/accommodation.repository";
+import { RoomTypeRepository } from "../repositories/roomType.repository";
+import { OptionalExtraRepository } from "../repositories/optionalExtra.repository";
 import { CreateAccommodationDTO, UpdateAccommodationDTO } from "../dtos/accommodation.dto";
 import { HttpError } from "../errors/http-error";
 
 const accommodationRepository = new AccommodationRepository();
+const roomTypeRepository = new RoomTypeRepository();
+const optionalExtraRepository = new OptionalExtraRepository();
 
 export class AccommodationService {
     async createAccommodation(data: CreateAccommodationDTO & { createdBy: string }) {
@@ -63,6 +67,20 @@ export class AccommodationService {
             if (!accommodation) {
                 throw new HttpError(404, "Accommodation not found");
             }
+            
+            // Cascade delete: Delete all room types for this accommodation
+            const roomTypes = await roomTypeRepository.getRoomTypesByAccommodation(id, false); // Get all, including inactive
+            for (const roomType of roomTypes) {
+                await roomTypeRepository.deleteRoomType(roomType._id.toString());
+            }
+            
+            // Cascade delete: Delete all optional extras for this accommodation
+            const optionalExtras = await optionalExtraRepository.getOptionalExtrasByAccommodation(id, false); // Get all, including inactive
+            for (const extra of optionalExtras) {
+                await optionalExtraRepository.deleteOptionalExtra(extra._id.toString());
+            }
+            
+            // Finally, delete the accommodation
             const isDeleted = await accommodationRepository.deleteAccommodation(id);
             if (!isDeleted) {
                 throw new HttpError(500, "Failed to delete accommodation");

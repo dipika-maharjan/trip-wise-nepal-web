@@ -25,6 +25,26 @@ export class BookingRepository {
         return await BookingModel.findByIdAndUpdate(id, { bookingStatus }, { new: true });
     }
 
+    async updateBookingFields(
+        id: string,
+        fields: Partial<IBooking>
+    ): Promise<IBooking | null> {
+        return await BookingModel.findByIdAndUpdate(id, fields, { new: true });
+    }
+
+    async deleteBooking(id: string): Promise<boolean> {
+        const result = await BookingModel.findByIdAndDelete(id);
+        return result !== null;
+    }
+
+    async getAllBookings(): Promise<IBooking[]> {
+        return await BookingModel.find({})
+            .populate("accommodationId")
+            .populate("roomTypeId")
+            .populate("userId")
+            .sort({ createdAt: -1 });
+    }
+
     async getOverlappingBookings(
         roomTypeId: string,
         checkIn: Date,
@@ -43,16 +63,23 @@ export class BookingRepository {
         roomTypeId: string,
         checkIn: Date,
         checkOut: Date,
-        session?: ClientSession
+        session?: ClientSession,
+        excludeBookingId?: string
     ): Promise<number> {
+        const match: Record<string, any> = {
+            roomTypeId: new mongoose.Types.ObjectId(roomTypeId),
+            bookingStatus: { $ne: "cancelled" },
+            checkIn: { $lt: checkOut },
+            checkOut: { $gt: checkIn },
+        };
+
+        if (excludeBookingId) {
+            match._id = { $ne: new mongoose.Types.ObjectId(excludeBookingId) };
+        }
+
         const result = await BookingModel.aggregate([
             {
-                $match: {
-                    roomTypeId: new mongoose.Types.ObjectId(roomTypeId),
-                    bookingStatus: { $ne: "cancelled" },
-                    checkIn: { $lt: checkOut },
-                    checkOut: { $gt: checkIn },
-                },
+                $match: match,
             },
             {
                 $group: {

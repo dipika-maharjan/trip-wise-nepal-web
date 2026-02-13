@@ -13,7 +13,6 @@ const AccommodationSchema: Schema = new Schema<AccommodationDocument>(
         images: { type: [String], default: [] },
         amenities: { type: [String], default: [] },
         ecoFriendlyHighlights: { type: [String], default: [] },
-        pricePerNight: { type: Number, required: true },
         maxGuests: Number,
         rooms: Number,
         bathrooms: Number,

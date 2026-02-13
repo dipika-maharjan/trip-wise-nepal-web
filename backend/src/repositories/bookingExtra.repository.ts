@@ -12,4 +12,8 @@ export class BookingExtraRepository {
     async getExtrasByBookingId(bookingId: string): Promise<IBookingExtra[]> {
         return await BookingExtraModel.find({ bookingId }).populate("extraId");
     }
+
+    async deleteByBookingId(bookingId: string): Promise<void> {
+        await BookingExtraModel.deleteMany({ bookingId });
+    }
 }
