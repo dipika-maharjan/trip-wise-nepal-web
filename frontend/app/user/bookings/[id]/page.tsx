@@ -148,6 +148,7 @@ export default function BookingDetailPage({ params }: PageProps) {
                                 <h3 className="text-lg font-bold text-gray-800">Price Summary</h3>
                                 
                                 <div className="space-y-2">
+                                    {/* Show breakdown but DO NOT recalc total */}
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-600">
                                             Room ({booking.nights} × {booking.roomsBooked})
@@ -190,6 +191,7 @@ export default function BookingDetailPage({ params }: PageProps) {
                                     )}
                                 </div>
 
+                                {/* FINAL TOTAL from backend */}
                                 <div className="pt-4 border-t-2 border-gray-300">
                                     <div className="flex justify-between items-center">
                                         <span className="text-lg font-bold text-gray-800">Total</span>

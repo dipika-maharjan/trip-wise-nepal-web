@@ -132,27 +132,39 @@ export default function EditBookingPage({ params }: PageProps) {
         return diffDays > 0 ? diffDays : 0;
     };
 
-    const calculateTotalPrice = () => {
-        const nights = calculateNights();
-        if (!selectedRoomType || nights === 0) return 0;
-
-        const roomType = roomTypes.find(rt => rt._id === selectedRoomType);
-        if (!roomType) return 0;
-
-        let total = roomType.pricePerNight * nights * roomsBooked;
-
+    const calculateExtrasTotal = () => {
+        let extrasTotal = 0;
         Object.entries(selectedExtras).forEach(([extraId, quantity]) => {
             const extra = optionalExtras.find(e => e._id === extraId);
-            if (extra && quantity > 0) {
-                if (extra.priceType === "per_person") {
-                    total += extra.price * guests * quantity;
-                } else {
-                    total += extra.price * quantity;
-                }
+            if (!extra || quantity <= 0) return;
+            if (extra.priceType === "per_person") {
+                extrasTotal += extra.price * guests * quantity;
+            } else {
+                extrasTotal += extra.price * quantity;
             }
         });
+        return extrasTotal;
+    };
 
-        return total;
+    const calculateRoomTotal = () => {
+        const nights = calculateNights();
+        if (!selectedRoomType || nights === 0) return 0;
+        const room = roomTypes.find(rt => rt._id === selectedRoomType);
+        if (!room) return 0;
+        return room.pricePerNight * nights * roomsBooked;
+    };
+
+    const calculateTax = (subtotal: number) => {
+        const TAX_RATE = 0.13;
+        return Math.round(subtotal * TAX_RATE);
+    };
+
+    const calculateTotalPrice = () => {
+        const roomTotal = calculateRoomTotal();
+        const extrasTotal = calculateExtrasTotal();
+        const subtotal = roomTotal + extrasTotal;
+        const tax = calculateTax(subtotal);
+        return subtotal + tax;
     };
 
     const handleExtraQuantityChange = (extraId: string, change: number) => {
@@ -251,6 +263,7 @@ export default function EditBookingPage({ params }: PageProps) {
                         <h1 className="text-2xl font-bold text-gray-800 mb-2">Edit Booking</h1>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* Room Type */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Select Room Type *
@@ -273,6 +286,7 @@ export default function EditBookingPage({ params }: PageProps) {
                                 )}
                             </div>
 
+                            {/* Dates */}
                             <div className="grid md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -304,6 +318,7 @@ export default function EditBookingPage({ params }: PageProps) {
                                 </div>
                             </div>
 
+                            {/* Guests & Rooms */}
                             <div className="grid md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -336,6 +351,7 @@ export default function EditBookingPage({ params }: PageProps) {
                                 </div>
                             </div>
 
+                            {/* Optional Extras */}
                             {optionalExtras.length > 0 && (
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-3">
@@ -378,6 +394,7 @@ export default function EditBookingPage({ params }: PageProps) {
                                 </div>
                             )}
 
+                            {/* Special Requests */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Special Requests (Optional)
@@ -391,6 +408,7 @@ export default function EditBookingPage({ params }: PageProps) {
                                 />
                             </div>
 
+                            {/* Submit */}
                             <button
                                 type="submit"
                                 disabled={submitting || !selectedRoomType || nights <= 0}
@@ -402,6 +420,7 @@ export default function EditBookingPage({ params }: PageProps) {
                     </div>
                 </div>
 
+                {/* Summary */}
                 <div className="lg:col-span-1">
                     <div className="bg-white rounded-xl shadow-md p-6 sticky top-6">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Updated Summary</h2>
@@ -437,34 +456,48 @@ export default function EditBookingPage({ params }: PageProps) {
                                 </>
                             )}
 
+                            {/* Extras breakdown */}
                             {Object.keys(selectedExtras).length > 0 && (
-                                <div className="pt-3 border-t border-gray-200">
+                                <div className="pt-2 border-t border-gray-200">
                                     <p className="font-medium text-gray-700 mb-2">Extras:</p>
-                                    {Object.entries(selectedExtras).map(([extraId, quantity]) => {
+                                    {Object.entries(selectedExtras).map(([extraId, qty]) => {
                                         const extra = optionalExtras.find(e => e._id === extraId);
-                                        if (!extra || quantity === 0) return null;
+                                        if (!extra || qty === 0) return null;
+                                        let extraTotal = 0;
+                                        if (extra.priceType === "per_person") {
+                                            extraTotal = extra.price * guests * qty;
+                                        } else {
+                                            extraTotal = extra.price * qty;
+                                        }
                                         return (
                                             <div key={extraId} className="flex justify-between text-xs mb-1">
-                                                <span className="text-gray-600">{extra.name} × {quantity}</span>
-                                                <span className="text-gray-800">
-                                                    Rs. {(extra.priceType === "per_person"
-                                                        ? extra.price * guests * quantity
-                                                        : extra.price * quantity).toLocaleString()}
-                                                </span>
+                                                <span className="text-gray-600">{extra.name} × {qty}</span>
+                                                <span className="text-gray-800">Rs. {extraTotal.toLocaleString()}</span>
                                             </div>
                                         );
                                     })}
-                                </div>
-                            )}
-
-                            {totalPrice > 0 && (
-                                <div className="pt-3 border-t border-gray-200">
-                                    <div className="flex justify-between text-lg font-bold">
-                                        <span className="text-gray-800">Total:</span>
-                                        <span className="text-[#0c7272]">Rs. {totalPrice.toLocaleString()}</span>
+                                    <div className="flex justify-between text-xs font-semibold mt-1">
+                                        <span>Extras Subtotal</span>
+                                        <span>Rs. {calculateExtrasTotal().toLocaleString()}</span>
                                     </div>
                                 </div>
                             )}
+
+                            {/* Room subtotal */}
+                            <div className="flex justify-between text-xs font-semibold mt-2">
+                                <span>Room Subtotal</span>
+                                <span>Rs. {calculateRoomTotal().toLocaleString()}</span>
+                            </div>
+                            {/* Tax */}
+                            <div className="flex justify-between text-xs mt-2">
+                                <span>Tax (13%)</span>
+                                <span>Rs. {calculateTax(calculateRoomTotal() + calculateExtrasTotal()).toLocaleString()}</span>
+                            </div>
+                            {/* Grand total */}
+                            <div className="pt-3 border-t border-gray-200 flex justify-between text-lg font-bold">
+                                <span>Total:</span>
+                                <span className="text-[#0c7272]">Rs. {calculateTotalPrice().toLocaleString()}</span>
+                            </div>
                         </div>
                     </div>
                 </div>

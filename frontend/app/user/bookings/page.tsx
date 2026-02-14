@@ -10,14 +10,8 @@ import { useRouter } from "next/navigation";
 
 interface Booking {
     _id: string;
-    accommodationId: {
-        _id: string;
-        name: string;
-    };
-    roomTypeId: {
-        _id: string;
-        name: string;
-    };
+    accommodationId: { _id: string; name: string };
+    roomTypeId: { _id: string; name: string };
     checkIn: string;
     checkOut: string;
     guests: number;
@@ -96,16 +90,11 @@ export default function MyBookingsPage() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'confirmed':
-                return 'bg-green-100 text-green-800';
-            case 'pending':
-                return 'bg-yellow-100 text-yellow-800';
-            case 'cancelled':
-                return 'bg-red-100 text-red-800';
-            case 'completed':
-                return 'bg-blue-100 text-blue-800';
-            default:
-                return 'bg-gray-100 text-gray-800';
+            case 'confirmed': return 'bg-green-100 text-green-800';
+            case 'pending': return 'bg-yellow-100 text-yellow-800';
+            case 'cancelled': return 'bg-red-100 text-red-800';
+            case 'completed': return 'bg-blue-100 text-blue-800';
+            default: return 'bg-gray-100 text-gray-800';
         }
     };
 
@@ -198,6 +187,7 @@ export default function MyBookingsPage() {
                                 </div>
 
                                 <div className="text-right">
+                                    {/* FINAL TOTAL from backend */}
                                     <div className="text-2xl font-bold text-[#0c7272]">
                                         Rs. {booking.totalPrice.toFixed(2)}
                                     </div>
