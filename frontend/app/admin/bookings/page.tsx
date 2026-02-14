@@ -233,7 +233,10 @@ export default function AdminBookingsPage() {
                                 Total
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
+                                Booking Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Payment Status
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
@@ -286,26 +289,26 @@ export default function AdminBookingsPage() {
                                         Rs. {booking.totalPrice.toFixed(2)}
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="space-y-2">
-                                            <select
-                                                value={booking.bookingStatus}
-                                                onChange={(e) => handleStatusUpdate(booking._id, { bookingStatus: e.target.value })}
-                                                className="w-full text-xs border border-gray-300 rounded-md px-2 py-1"
-                                            >
-                                                <option value="pending">pending</option>
-                                                <option value="confirmed">confirmed</option>
-                                                <option value="cancelled">cancelled</option>
-                                                <option value="completed">completed</option>
-                                            </select>
-                                            <select
-                                                value={booking.paymentStatus}
-                                                onChange={(e) => handleStatusUpdate(booking._id, { paymentStatus: e.target.value })}
-                                                className="w-full text-xs border border-gray-300 rounded-md px-2 py-1"
-                                            >
-                                                <option value="pending">pending</option>
-                                                <option value="paid">paid</option>
-                                            </select>
-                                        </div>
+                                        <select
+                                            value={booking.bookingStatus}
+                                            onChange={(e) => handleStatusUpdate(booking._id, { bookingStatus: e.target.value })}
+                                            className="w-full text-xs border border-gray-300 rounded-md px-2 py-1"
+                                        >
+                                            <option value="pending">pending</option>
+                                            <option value="confirmed">confirmed</option>
+                                            <option value="cancelled">cancelled</option>
+                                            <option value="completed">completed</option>
+                                        </select>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <select
+                                            value={booking.paymentStatus}
+                                            onChange={(e) => handleStatusUpdate(booking._id, { paymentStatus: e.target.value })}
+                                            className="w-full text-xs border border-gray-300 rounded-md px-2 py-1"
+                                        >
+                                            <option value="pending">pending</option>
+                                            <option value="paid">paid</option>
+                                        </select>
                                     </td>
                                     <td className="px-6 py-4 text-sm font-medium space-x-2">
                                         <Link
