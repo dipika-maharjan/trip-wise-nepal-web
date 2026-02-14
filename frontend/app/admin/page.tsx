@@ -1,15 +1,17 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { Users, UserCheck, Shield, UserPlus, Settings, TrendingUp } from "lucide-react";
+import { Users, UserCheck, Shield, UserPlus, Settings, TrendingUp, Home } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getAllUsers } from "@/lib/api/admin/user";
+import { getAllAccommodationsAdmin } from "@/lib/api/admin/accommodation";
 
 interface DashboardStats {
     totalUsers: number;
     adminUsers: number;
     regularUsers: number;
+    totalAccommodations: number;
 }
 
 export default function AdminDashboard() {
@@ -18,6 +20,7 @@ export default function AdminDashboard() {
         totalUsers: 0,
         adminUsers: 0,
         regularUsers: 0,
+        totalAccommodations: 0,
     });
     const [loading, setLoading] = useState(true);
 
@@ -28,12 +31,22 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
         try {
             const response = await getAllUsers();
+            let totalAccommodations = 0;
+            try {
+                const accRes = await getAllAccommodationsAdmin();
+                if (accRes.success && Array.isArray(accRes.data)) {
+                    totalAccommodations = accRes.data.length;
+                }
+            } catch (err) {
+                console.error("Failed to fetch accommodations:", err);
+            }
             if (response.success) {
                 const users = response.data;
                 setStats({
                     totalUsers: users.length,
                     adminUsers: users.filter((u: any) => u.role === "admin").length,
                     regularUsers: users.filter((u: any) => u.role === "user").length,
+                    totalAccommodations,
                 });
             }
         } catch (err) {
@@ -62,7 +75,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Total Users Card */}
                     <div className="bg-white rounded-2xl p-5 shadow-md border-l-4 border-[#0c7272] hover:shadow-lg transition-all duration-300 group">
                         <div className="flex items-start justify-between mb-4">
@@ -96,6 +109,23 @@ export default function AdminDashboard() {
                             {loading ? "..." : stats.adminUsers}
                         </p>
                         <p className="text-xs text-gray-500">Full access granted</p>
+                    </div>
+
+                    {/* Total Accommodations Card */}
+                    <div className="bg-white rounded-2xl p-5 shadow-md border-l-4 border-[#0c7272] hover:shadow-lg transition-all duration-300 group">
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="bg-gradient-to-br from-[#0c7272]/10 to-[#0c7272]/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+                                <Home className="text-[#0c7272]" size={26} />
+                            </div>
+                            <span className="text-[11px] font-semibold px-2.5 py-1 bg-[#0c7272]/10 text-[#0c7272] rounded-full">
+                                Accommodations
+                            </span>
+                        </div>
+                        <p className="text-xs text-gray-600 font-medium mb-1">Total Accommodations</p>
+                        <p className="text-2xl font-bold text-gray-900 mb-2">
+                            {loading ? "..." : stats.totalAccommodations}
+                        </p>
+                        <p className="text-xs text-gray-500">Active and inactive</p>
                     </div>
                 </div>
 
@@ -140,6 +170,52 @@ export default function AdminDashboard() {
                                     </p>
                                     <div className="flex items-center text-sm text-white font-semibold group-hover:gap-2 transition-all">
                                         Create User
+                                        <span className="ml-2 group-hover:ml-4 transition-all">→</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* Manage Accommodations Card */}
+                    <Link href="/admin/accommodations">
+                        <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 hover:border-[#0c7272] cursor-pointer group mt-5">
+                            <div className="flex items-start gap-6">
+                                <div className="bg-gradient-to-br from-[#0c7272] to-[#0a5555] p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-lg">
+                                    <Home className="text-white" size={26} />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-[#0c7272] transition-colors">
+                                        Manage Accommodations
+                                    </h3>
+                                    <p className="text-sm text-gray-600 mb-3">
+                                        View, edit, and manage all accommodations on the platform
+                                    </p>
+                                    <div className="flex items-center text-sm text-[#0c7272] font-semibold group-hover:gap-2 transition-all">
+                                        Go to Accommodations
+                                        <span className="ml-2 group-hover:ml-4 transition-all">→</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+
+                    {/* Create Accommodation Card */}
+                    <Link href="/admin/accommodations/create">
+                        <div className="bg-gradient-to-br from-[#0c7272] to-[#0a5555] rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer group mt-5">
+                            <div className="flex items-start gap-6">
+                                <div className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl group-hover:scale-110 transition-transform border border-white/30">
+                                    <Settings className="text-white" size={26} />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-lg font-bold text-white mb-1">
+                                        Create New Accommodation
+                                    </h3>
+                                    <p className="text-sm text-white/90 mb-3">
+                                        Add a new accommodation to the platform
+                                    </p>
+                                    <div className="flex items-center text-sm text-white font-semibold group-hover:gap-2 transition-all">
+                                        Create Accommodation
                                         <span className="ml-2 group-hover:ml-4 transition-all">→</span>
                                     </div>
                                 </div>
