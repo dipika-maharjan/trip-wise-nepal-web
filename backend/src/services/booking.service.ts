@@ -44,6 +44,16 @@ export class BookingService {
     bookingLocks[lockKey] = true;
 
     try {
+      // Duplicate booking prevention: block same user, same accommodation, overlapping dates
+      const overlapping = await bookingRepository.getUserOverlappingBookings(
+        userId,
+        data.accommodationId,
+        new Date(data.checkIn),
+        new Date(data.checkOut)
+      );
+      if (overlapping.length > 0) {
+        throw new HttpError(409, "You already have a booking for these dates at this accommodation.");
+      }
       const accommodation = await accommodationRepository.getAccommodationById(
         data.accommodationId,
       );
@@ -129,18 +139,16 @@ export class BookingService {
             );
           }
 
+          // Validate quantity: must be positive and not excessive
           const quantity =
             extraRequest.quantity && extraRequest.quantity > 0
               ? extraRequest.quantity
               : 1;
+          if (quantity > 100) {
+            throw new HttpError(400, "Extras quantity too large");
+          }
+
           let extraTotal = 0;
-
-          // if (extra.priceType === "per_person") {
-          //     extraTotal = extra.price * data.guests * quantity;
-          // } else {
-          //     extraTotal = extra.price * quantity;
-          // }
-
           if (extra.priceType === "per_person") {
             extraTotal = extra.price * data.guests * quantity; // multiply by guests and quantity
           } else {

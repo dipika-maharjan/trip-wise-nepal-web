@@ -1,7 +1,23 @@
+
 import mongoose, { ClientSession } from "mongoose";
 import { BookingModel, IBooking } from "../models/booking.model";
 
 export class BookingRepository {
+
+        async getUserOverlappingBookings(
+            userId: string,
+            accommodationId: string,
+            checkIn: Date,
+            checkOut: Date
+        ): Promise<IBooking[]> {
+            return await BookingModel.find({
+                userId: new mongoose.Types.ObjectId(userId),
+                accommodationId: new mongoose.Types.ObjectId(accommodationId),
+                bookingStatus: { $ne: "cancelled" },
+                checkIn: { $lt: checkOut },
+                checkOut: { $gt: checkIn },
+            });
+        }
     async createBooking(data: Partial<IBooking>, session?: ClientSession): Promise<IBooking> {
         const booking = new BookingModel(data);
         return await booking.save({ session });
