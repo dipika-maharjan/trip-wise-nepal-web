@@ -13,6 +13,7 @@ const RoomTypeSchema: Schema = new Schema<RoomTypeDocument>(
             required: true,
         },
         name: { type: String, required: true },
+        description: { type: String },
         pricePerNight: { type: Number, required: true },
         totalRooms: { type: Number, required: true },
         maxGuests: { type: Number, required: true },

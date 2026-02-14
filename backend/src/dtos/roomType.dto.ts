@@ -4,6 +4,7 @@ import { RoomTypeSchema } from "../types/roomType.type";
 export const CreateRoomTypeDTO = RoomTypeSchema.pick({
     accommodationId: true,
     name: true,
+    description: true,
     pricePerNight: true,
     totalRooms: true,
     maxGuests: true,
