@@ -4,14 +4,12 @@ import Image from "next/image";
 
 import { Search, Star } from "lucide-react";
 
-// Assets
-
 import mainImage from "../public/images/main-section.png";
-import Navbar from "./components/navbar/Navbar";
-import Footer from "./components/footer/Footer";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getAllAccommodations, searchAccommodations, Accommodation } from "../lib/api/accommodation";
+import Navbar from "./components/navbar/Navbar";
+import Footer from "./components/footer/Footer";
 
 
 
@@ -68,9 +66,9 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-[#134e4a]">
-      <Navbar />
-      <main className="max-w-6xl mx-auto px-6 py-8">
+    <div className="min-h-screen bg-white text-[#134e4a] flex flex-col">
+      <Navbar/>
+      <main className="flex-1 max-w-6xl mx-auto px-6 py-8">
         {/* Search Bar */}
         <div className="flex justify-center mb-10">
           <div className="relative w-full max-w-xl">
@@ -86,7 +84,7 @@ export default function HomePage() {
         </div>
 
         {/* Hero Section */}
-        <section className="relative h-[350px] rounded-3xl overflow-hidden mb-12 shadow-xl">
+        <section className="relative h-87.5 rounded-3xl overflow-hidden mb-12 shadow-xl">
           <Image src={mainImage} alt="Nepal Mountains" fill className="object-cover" priority />
           <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-white text-center">
             <h2 className="text-4xl font-bold mb-2">Discover Your Nepal</h2>
@@ -145,7 +143,7 @@ export default function HomePage() {
                       }
                     })()}
                   </div>
-                  <div className="p-4 flex flex-col flex-grow">
+                  <div className="p-4 flex flex-col grow">
                     <div className="flex justify-between items-start mb-1">
                       <h4 className="font-bold text-lg leading-tight line-clamp-1" title={acc.name}>{acc.name}</h4>
                       <span className="flex items-center text-xs font-bold gap-1 shrink-0">
@@ -164,7 +162,7 @@ export default function HomePage() {
           )}
         </section>
       </main>
-      <Footer />
+      <Footer/>
     </div>
   );
 }
