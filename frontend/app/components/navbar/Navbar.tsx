@@ -32,11 +32,20 @@ export default function Navbar() {
 
   return (
     <nav className="flex items-center px-15 py-4 bg-white border-b border-gray-50">
-      <Link href="/">
+      <button
+        className="bg-transparent border-none p-0 m-0"
+        onClick={() => router.push(isAuthenticated ? "/user/dashboard" : "/")}
+        aria-label="Home"
+      >
         <Image src={logo} alt="Logo" width={65} height={65} />
-      </Link>
+      </button>
       <div className="ml-auto flex items-center gap-8 text-sm font-medium text-[#0c7272]">
-        <Link href="/" className="hover:text-black">Home</Link>
+        <button
+          className="hover:text-black bg-transparent border-none p-0 m-0 text-inherit"
+          onClick={() => router.push(isAuthenticated ? "/user/dashboard" : "/")}
+        >
+          Home
+        </button>
         <Link href="/accommodations" className="hover:text-black">Accommodations</Link>
         {isAuthenticated && (
           <Link href="/user/bookings" className="hover:text-black">My Bookings</Link>
