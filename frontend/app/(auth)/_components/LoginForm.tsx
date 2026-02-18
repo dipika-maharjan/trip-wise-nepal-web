@@ -33,6 +33,12 @@ export default function LoginForm() {
       if (!res.success) {
         throw new Error(res.message || "Login failed");
       }
+      // Store JWT token in localStorage for client-side API usage
+      if (res.token) {
+        localStorage.setItem("token", res.token);
+      } else if (res.data?.token) {
+        localStorage.setItem("token", res.data.token);
+      }
       await checkAuth();
       // Redirect based on user role
       startTransition(() => {

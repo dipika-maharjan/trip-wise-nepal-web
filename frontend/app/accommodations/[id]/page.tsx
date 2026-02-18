@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Star, MapPin, Calendar, Leaf, ChevronLeft, ChevronRight, Loader2, ArrowLeft } from "lucide-react";
+import { MapPin, Calendar, Leaf, ChevronLeft, ChevronRight, Loader2, ArrowLeft } from "lucide-react";
 import Navbar from "@/app/components/navbar/Navbar";
 import Footer from "@/app/components/footer/Footer";
 import { getAccommodationById, Accommodation } from "@/lib/api/accommodation";
@@ -34,17 +34,17 @@ export default function AccommodationDetailPage({ params }: { params: Promise<{ 
         } finally {
             setLoading(false);
         }
+    }
+
+    const handlePrevImage = () => {
+        if (accommodation && accommodation.images.length > 0) {
+            setCurrentImageIndex((prev) => (prev - 1 + accommodation.images.length) % accommodation.images.length);
+        }
     };
 
     const handleNextImage = () => {
         if (accommodation && accommodation.images.length > 0) {
             setCurrentImageIndex((prev) => (prev + 1) % accommodation.images.length);
-        }
-    };
-
-    const handlePrevImage = () => {
-        if (accommodation && accommodation.images.length > 0) {
-            setCurrentImageIndex((prev) => (prev - 1 + accommodation.images.length) % accommodation.images.length);
         }
     };
 
@@ -271,7 +271,228 @@ export default function AccommodationDetailPage({ params }: { params: Promise<{ 
                 </div>
             </main>
 
-            <Footer />
+                        {/* Review & Rating Section */}
+                        <section className="max-w-2xl mx-auto my-12">
+                            <ReviewSection accommodationId={accommodation._id} />
+                        </section>
+                        <Footer />
+                </div>
+        );
+}
+
+// --- ReviewSection Component ---
+import { getReviews, createReview, updateReview, deleteReview } from "../../lib/api/review";
+import { Star, Pencil, Trash2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+function ReviewSection({ accommodationId }: { accommodationId: string }) {
+    const [reviews, setReviews] = useState<any[]>([]);
+    const [myRating, setMyRating] = useState(0);
+    const [myComment, setMyComment] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+    const [showAll, setShowAll] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [editReviewId, setEditReviewId] = useState<string | null>(null);
+    const { user, isAuthenticated } = useAuth();
+
+    useEffect(() => {
+        getReviews(accommodationId).then(setReviews);
+    }, [accommodationId]);
+
+    const handleSubmitReview = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            await createReview({ accommodationId, rating: myRating, comment: myComment });
+            toast.success("Review submitted successfully!");
+            setMyRating(0);
+            setMyComment("");
+            getReviews(accommodationId).then(setReviews);
+        } catch (err: any) {
+            toast.error(err?.message || "Failed to submit review");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleEdit = (review: any) => {
+        setEditMode(true);
+        setEditReviewId(review._id);
+        setMyRating(review.rating);
+        setMyComment(review.comment);
+    };
+
+    const handleUpdateReview = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editReviewId) return;
+        setSubmitting(true);
+        try {
+            await updateReview(editReviewId, { rating: myRating, comment: myComment });
+            toast.success("Review updated successfully!");
+            setEditMode(false);
+            setEditReviewId(null);
+            setMyRating(0);
+            setMyComment("");
+            getReviews(accommodationId).then(setReviews);
+        } catch (err: any) {
+            toast.error(err?.message || "Failed to update review");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleDeleteReview = async (reviewId: string) => {
+        if (!window.confirm("Are you sure you want to delete your review?")) return;
+        setSubmitting(true);
+        try {
+            await deleteReview(reviewId);
+            toast.success("Review deleted successfully!");
+            setEditMode(false);
+            setEditReviewId(null);
+            setMyRating(0);
+            setMyComment("");
+            getReviews(accommodationId).then(setReviews);
+        } catch (err: any) {
+            toast.error(err?.message || "Failed to delete review");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    // Show only 3 reviews by default
+    const visibleReviews = showAll ? reviews : reviews.slice(0, 3);
+
+    // Star rating input
+    const StarInput = ({ value, onChange }: { value: number; onChange: (v: number) => void }) => (
+        <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                    type="button"
+                    key={star}
+                    onClick={() => onChange(star)}
+                    className="focus:outline-none"
+                >
+                    <Star size={24} className={star <= value ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
+                </button>
+            ))}
+        </div>
+    );
+
+    return (
+        <div className="bg-white rounded-xl shadow p-6">
+            <h2 className="text-2xl font-bold mb-4 text-[#0c7272]">Reviews & Ratings</h2>
+            {reviews.length === 0 ? (
+                <p className="text-gray-500">No reviews yet.</p>
+            ) : (
+                <div className="space-y-4">
+                    {visibleReviews.map((r) => {
+                        const isMyReview = isAuthenticated && r.userId?._id === user?._id;
+                        return (
+                            <div key={r._id} className="border-b pb-3">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-semibold text-[#0c7272]">{r.userId?.name || "User"}</span>
+                                    <div className="flex gap-0.5">
+                                        {[1,2,3,4,5].map((i) => (
+                                            <Star key={i} size={18} className={i <= r.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
+                                        ))}
+                                    </div>
+                                    <span className="text-xs text-gray-400 ml-2">{new Date(r.createdAt).toLocaleDateString()}</span>
+                                    {isMyReview && (
+                                        <>
+                                            <button
+                                                className="ml-2 p-1 rounded hover:bg-blue-50 text-blue-600"
+                                                title="Edit"
+                                                onClick={() => handleEdit(r)}
+                                                disabled={submitting}
+                                            >
+                                                <Pencil size={16} />
+                                            </button>
+                                            <button
+                                                className="ml-1 p-1 rounded hover:bg-red-50 text-red-600"
+                                                title="Delete"
+                                                onClick={() => handleDeleteReview(r._id)}
+                                                disabled={submitting}
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                                <div className="text-gray-700 text-sm">{r.comment}</div>
+                            </div>
+                        );
+                    })}
+                    {reviews.length > 3 && !showAll && (
+                        <button
+                            className="mt-2 text-[#0c7272] underline text-sm font-medium hover:text-[#134e4a]"
+                            onClick={() => setShowAll(true)}
+                        >
+                            View all reviews →
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {isAuthenticated && !editMode && !reviews.some(r => r.userId?._id === user?._id) && (
+                <form onSubmit={handleSubmitReview} className="mt-8 space-y-3 bg-gray-50 p-4 rounded-lg border">
+                    <div>
+                        <label className="block font-medium mb-1">Your Rating</label>
+                        <StarInput value={myRating} onChange={setMyRating} />
+                    </div>
+                    <div>
+                        <label className="block font-medium mb-1">Your Review</label>
+                        <textarea
+                            value={myComment}
+                            onChange={e => setMyComment(e.target.value)}
+                            required
+                            className="border rounded px-3 py-2 w-full"
+                            placeholder="Share your experience..."
+                            rows={3}
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={submitting || myRating === 0}
+                        className="bg-[#0c7272] text-white px-6 py-2 rounded hover:bg-[#134e4a] transition font-semibold"
+                    >
+                        {submitting ? "Submitting..." : "Submit Review"}
+                    </button>
+                </form>
+            )}
+
+            {isAuthenticated && editMode && (
+                <form onSubmit={handleUpdateReview} className="mt-8 space-y-3 bg-gray-50 p-4 rounded-lg border">
+                    <div>
+                        <label className="block font-medium mb-1">Edit Your Rating</label>
+                        <StarInput value={myRating} onChange={setMyRating} />
+                    </div>
+                    <div>
+                        <label className="block font-medium mb-1">Edit Your Review</label>
+                        <textarea
+                            value={myComment}
+                            onChange={e => setMyComment(e.target.value)}
+                            required
+                            className="border rounded px-3 py-2 w-full"
+                            placeholder="Update your experience..."
+                            rows={3}
+                        />
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            type="submit"
+                            disabled={submitting || myRating === 0}
+                            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition font-semibold"
+                        >
+                            {submitting ? "Updating..." : "Update Review"}
+                        </button>
+                        <button
+                            type="button"
+                            className="bg-gray-200 text-gray-700 px-6 py-2 rounded hover:bg-gray-300 transition font-semibold"
+                            onClick={() => { setEditMode(false); setEditReviewId(null); setMyRating(0); setMyComment(""); }}
+                            disabled={submitting}
+                        >Cancel</button>
+                    </div>
+                </form>
+            )}
         </div>
     );
 }
