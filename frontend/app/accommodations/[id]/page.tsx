@@ -273,7 +273,7 @@ export default function AccommodationDetailPage({ params }: { params: Promise<{ 
 
                         {/* Review & Rating Section */}
                         <section className="max-w-2xl mx-auto my-12">
-                            <ReviewSection accommodationId={accommodation._id} />
+                               <ReviewSection accommodationId={accommodation._id} />
                         </section>
                         <Footer />
                 </div>
@@ -281,7 +281,7 @@ export default function AccommodationDetailPage({ params }: { params: Promise<{ 
 }
 
 // --- ReviewSection Component ---
-import { getReviews, createReview, updateReview, deleteReview } from "../../lib/api/review";
+import { getReviews, createReview, updateReview, deleteReview } from "../../../lib/api/review";
 import { Star, Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 function ReviewSection({ accommodationId }: { accommodationId: string }) {
