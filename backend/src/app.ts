@@ -9,6 +9,7 @@ import accommodationRoutes from './routes/accommodation.route';
 import roomTypeRoutes from './routes/roomType.route';
 import optionalExtraRoutes from './routes/optionalExtra.route';
 import bookingRoutes from './routes/booking.route';
+import reviewRoutes from './routes/review.route';
 
 const app: Application = express();
 
@@ -44,6 +45,7 @@ app.use('/api/accommodations', accommodationRoutes);
 app.use('/api/room-types', roomTypeRoutes);
 app.use('/api/optional-extras', optionalExtraRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/reviews', reviewRoutes);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); //serve static files (images)
 
 export default app;
