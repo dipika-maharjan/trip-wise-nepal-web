@@ -9,6 +9,7 @@ export interface IReview extends Document {
   updatedAt: Date;
 }
 
+
 const ReviewSchema: Schema = new Schema<IReview>(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -18,5 +19,10 @@ const ReviewSchema: Schema = new Schema<IReview>(
   },
   { timestamps: true }
 );
+
+// Indexes for uniqueness and performance
+ReviewSchema.index({ userId: 1, accommodationId: 1 }, { unique: true });
+ReviewSchema.index({ accommodationId: 1 });
+ReviewSchema.index({ createdAt: -1 });
 
 export const ReviewModel = mongoose.model<IReview>("Review", ReviewSchema);
