@@ -14,8 +14,8 @@ export async function deleteReview(reviewId: string) {
 }
 import axios from "@/lib/api/axios";
 
-export async function getReviews(accommodationId: string) {
-  const res = await axios.get(`/api/reviews?accommodationId=${accommodationId}`);
+export async function getReviews(accommodationId: string, { page = 1, limit = 5, sort = "latest" } = {}) {
+  const res = await axios.get(`/api/reviews?accommodationId=${accommodationId}&page=${page}&limit=${limit}&sort=${sort}`);
   return res.data.data;
 }
 

@@ -289,14 +289,23 @@ function ReviewSection({ accommodationId }: { accommodationId: string }) {
     const [myRating, setMyRating] = useState(0);
     const [myComment, setMyComment] = useState("");
     const [submitting, setSubmitting] = useState(false);
-    const [showAll, setShowAll] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [editReviewId, setEditReviewId] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const [limit] = useState(5);
+    const [sort, setSort] = useState("latest");
+    const [hasMore, setHasMore] = useState(false);
     const { user, isAuthenticated } = useAuth();
 
     useEffect(() => {
-        getReviews(accommodationId).then(setReviews);
-    }, [accommodationId]);
+        fetchReviews();
+    }, [accommodationId, page, sort]);
+
+    const fetchReviews = async () => {
+        const data = await getReviews(accommodationId, { page, limit, sort });
+        setReviews(data);
+        setHasMore(data.length === limit);
+    };
 
     const handleSubmitReview = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -306,9 +315,15 @@ function ReviewSection({ accommodationId }: { accommodationId: string }) {
             toast.success("Review submitted successfully!");
             setMyRating(0);
             setMyComment("");
-            getReviews(accommodationId).then(setReviews);
+            setPage(1);
+            fetchReviews();
         } catch (err: any) {
-            toast.error(err?.message || "Failed to submit review");
+            if (err?.response?.status === 409) {
+                toast.info("You’ve already reviewed this accommodation. You can edit your review instead.");
+                // Optionally, scroll to or highlight the user's review
+            } else {
+                toast.error(err?.message || "Failed to submit review");
+            }
         } finally {
             setSubmitting(false);
         }
@@ -332,7 +347,7 @@ function ReviewSection({ accommodationId }: { accommodationId: string }) {
             setEditReviewId(null);
             setMyRating(0);
             setMyComment("");
-            getReviews(accommodationId).then(setReviews);
+            fetchReviews();
         } catch (err: any) {
             toast.error(err?.message || "Failed to update review");
         } finally {
@@ -350,16 +365,13 @@ function ReviewSection({ accommodationId }: { accommodationId: string }) {
             setEditReviewId(null);
             setMyRating(0);
             setMyComment("");
-            getReviews(accommodationId).then(setReviews);
+            fetchReviews();
         } catch (err: any) {
             toast.error(err?.message || "Failed to delete review");
         } finally {
             setSubmitting(false);
         }
     };
-
-    // Show only 3 reviews by default
-    const visibleReviews = showAll ? reviews : reviews.slice(0, 3);
 
     // Star rating input
     const StarInput = ({ value, onChange }: { value: number; onChange: (v: number) => void }) => (
@@ -379,17 +391,31 @@ function ReviewSection({ accommodationId }: { accommodationId: string }) {
 
     return (
         <div className="bg-white rounded-xl shadow p-6">
-            <h2 className="text-2xl font-bold mb-4 text-[#0c7272]">Reviews & Ratings</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+                <h2 className="text-2xl font-bold text-[#0c7272]">Reviews & Ratings</h2>
+                <div>
+                    <label className="mr-2 font-medium text-sm">Sort by:</label>
+                    <select
+                        value={sort}
+                        onChange={e => { setSort(e.target.value); setPage(1); }}
+                        className="border rounded px-2 py-1 text-sm"
+                    >
+                        <option value="latest">Latest</option>
+                        <option value="highest">Highest Rating</option>
+                        <option value="lowest">Lowest Rating</option>
+                    </select>
+                </div>
+            </div>
             {reviews.length === 0 ? (
                 <p className="text-gray-500">No reviews yet.</p>
             ) : (
                 <div className="space-y-4">
-                    {visibleReviews.map((r) => {
-                        const isMyReview = isAuthenticated && r.userId?._id === user?._id;
+                    {reviews.map((r) => {
+                        const isMyReview = isAuthenticated && (r.user?._id === user?._id || r.userId?._id === user?._id);
                         return (
                             <div key={r._id} className="border-b pb-3">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="font-semibold text-[#0c7272]">{r.userId?.name || "User"}</span>
+                                    <span className="font-semibold text-[#0c7272]">{r.user?.name || r.userId?.name || "User"}</span>
                                     <div className="flex gap-0.5">
                                         {[1,2,3,4,5].map((i) => (
                                             <Star key={i} size={18} className={i <= r.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"} />
@@ -421,16 +447,9 @@ function ReviewSection({ accommodationId }: { accommodationId: string }) {
                             </div>
                         );
                     })}
-                    {reviews.length > 3 && !showAll && (
-                        <button
-                            className="mt-2 text-[#0c7272] underline text-sm font-medium hover:text-[#134e4a]"
-                            onClick={() => setShowAll(true)}
-                        >
-                            View all reviews →
-                        </button>
-                    )}
                 </div>
             )}
+            {/* Pagination Controls removed as requested */}
 
             {isAuthenticated && !editMode && !reviews.some(r => r.userId?._id === user?._id) && (
                 <form onSubmit={handleSubmitReview} className="mt-8 space-y-3 bg-gray-50 p-4 rounded-lg border">
