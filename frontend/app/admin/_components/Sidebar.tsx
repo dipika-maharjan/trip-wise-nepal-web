@@ -10,6 +10,7 @@ const ADMIN_LINKS = [
     { href: "/admin/room-types", label: "Room Types" },
     { href: "/admin/optional-extras", label: "Optional Extras" },
     { href: "/admin/bookings", label: "Bookings" },
+    { href: "/admin/reviews", label: "Reviews" },
 ];
 
 export default function Sidebar() {
