@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Star, Pencil, Trash2, Filter } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "@/lib/api/axios";
+import { API } from "@/lib/api/endpoints";
 
 interface Review {
   _id: string;
@@ -57,16 +58,13 @@ const AdminReviewsPage = () => {
     const fetchReviews = async () => {
       setLoading(true);
       try {
-        let url = `/api/reviews?page=${page}&limit=${limit}&sort=${sort}`;
-        if (selectedAccommodation) url += `&accommodationId=${selectedAccommodation}`;
+        const url = API.REVIEW.GET_ALL(selectedAccommodation, page, limit, sort);
         const res = await axios.get(url);
-        // If backend returns total count, use it. Otherwise, estimate.
         setReviews(res.data.data || []);
         setHasMore((res.data.data || []).length === limit);
         if (typeof res.data.total === "number") {
           setTotalReviews(res.data.total);
         } else {
-          // Estimate total pages if not available
           setTotalReviews((page - 1) * limit + (res.data.data?.length || 0) + (hasMore ? limit : 0));
         }
       } catch (err: any) {
@@ -92,7 +90,7 @@ const AdminReviewsPage = () => {
       if (!editingReview) return;
       setSubmitting(true);
       try {
-        await axios.put(`/api/reviews/${editingReview._id}`, { rating: editRating, comment: editComment });
+        await axios.put(API.REVIEW.UPDATE(editingReview._id), { rating: editRating, comment: editComment });
         toast.success("Review updated successfully!");
         setEditingReview(null);
         fetchReviews();
@@ -107,7 +105,7 @@ const AdminReviewsPage = () => {
       if (!window.confirm("Are you sure you want to delete this review?")) return;
       setSubmitting(true);
       try {
-        await axios.delete(`/api/reviews/${reviewId}`);
+        await axios.delete(API.REVIEW.DELETE(reviewId));
         toast.success("Review deleted successfully!");
         fetchReviews();
       } catch (err: any) {

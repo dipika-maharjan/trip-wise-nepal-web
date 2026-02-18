@@ -282,6 +282,7 @@ export default function AccommodationDetailPage({ params }: { params: Promise<{ 
 
 // --- ReviewSection Component ---
 import { getReviews, createReview, updateReview, deleteReview } from "../../../lib/api/review";
+import { API } from "@/lib/api/endpoints";
 import { Star, Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 function ReviewSection({ accommodationId }: { accommodationId: string }) {

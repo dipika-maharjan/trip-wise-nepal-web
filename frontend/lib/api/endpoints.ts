@@ -52,4 +52,11 @@ export const API = {
     UPDATE: "/api/bookings",
     DELETE: "/api/bookings",
   },
+
+  REVIEW: {
+    CREATE: "/api/reviews",
+    GET_ALL: (accommodationId: string, page = 1, limit = 5, sort = "latest") => `/api/reviews?accommodationId=${accommodationId}&page=${page}&limit=${limit}&sort=${sort}`,
+    UPDATE: (reviewId: string) => `/api/reviews/${reviewId}`,
+    DELETE: (reviewId: string) => `/api/reviews/${reviewId}`,
+  },
 };
