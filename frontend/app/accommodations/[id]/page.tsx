@@ -7,6 +7,9 @@ import { MapPin, Calendar, Leaf, ChevronLeft, ChevronRight, Loader2, ArrowLeft }
 import Navbar from "@/app/components/navbar/Navbar";
 import Footer from "@/app/components/footer/Footer";
 import { getAccommodationById, Accommodation } from "@/lib/api/accommodation";
+import dynamic from "next/dynamic";
+const MapSection = dynamic(() => import("./MapSection"), { ssr: false });
+
 import { toast } from "react-toastify";
 
 export default function AccommodationDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -189,27 +192,24 @@ export default function AccommodationDetailPage({ params }: { params: Promise<{ 
                             </div>
                         )}
 
-                        {/* Location */}
-                        <div>
-                            <h2 className="text-xl sm:text-2xl font-semibold text-[#0c7272] mb-3">Location</h2>
-                            <div className="border border-gray-300 rounded-lg p-4 sm:p-6 bg-gray-50">
-                                <p className="text-gray-600 mb-2 text-sm sm:text-base">
-                                    <strong>Coordinates:</strong> {accommodation.location.lat}, {accommodation.location.lng}
-                                </p>
-                                {accommodation.location.mapUrl ? (
-                                    <a
-                                        href={accommodation.location.mapUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-[#0c7272] hover:underline text-sm sm:text-base"
-                                    >
-                                        View on Map →
-                                    </a>
-                                ) : (
-                                    <p className="text-gray-500 italic text-sm sm:text-base">Map integration coming soon</p>
-                                )}
-                            </div>
-                        </div>
+                                                {/* Location */}
+                                                <div>
+                                                        <h2 className="text-xl sm:text-2xl font-semibold text-[#0c7272] mb-3">Location</h2>
+                                                        <div className="border border-gray-300 rounded-lg p-4 sm:p-6 bg-gray-50">
+                                                                <p className="text-gray-600 mb-2 text-sm sm:text-base">
+                                                                        <strong>Coordinates:</strong> {accommodation.location.lat}, {accommodation.location.lng}
+                                                                </p>
+                                                                                                                                {accommodation.location?.lat && accommodation.location?.lng ? (
+                                                                                                                                    <MapSection
+                                                                                                                                        lat={accommodation.location.lat}
+                                                                                                                                        lng={accommodation.location.lng}
+                                                                                                                                        name={accommodation.name}
+                                                                                                                                    />
+                                                                                                                                ) : (
+                                                                                                                                    <p className="text-gray-500 italic text-sm sm:text-base">Map integration coming soon</p>
+                                                                                                                                )}
+                                                        </div>
+                                                </div>
 
                         {/* Availability */}
                         {(accommodation.availableFrom || accommodation.availableUntil) && (
