@@ -192,7 +192,7 @@ export default function Dashboard() {
                       <h4 className="font-bold text-lg leading-tight line-clamp-1" title={acc.name}>{acc.name}</h4>
                       <span className="flex items-center text-xs font-bold gap-1 shrink-0">
                         <Star size={14} className="fill-yellow-400 text-yellow-400" />
-                        {acc.rating?.toFixed(1) ?? "-"}
+                        {acc.totalReviews === 0 ? "No reviews" : `${acc.rating?.toFixed(1)} (${acc.totalReviews})`}
                       </span>
                     </div>
                     <p className="text-xs text-[#0c7272] mb-2 font-medium line-clamp-1" title={acc.address}>{acc.address}</p>
