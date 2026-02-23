@@ -9,10 +9,6 @@ export class AccommodationController {
     private parseFormData = (body: any) => {
         const parsed: any = { ...body };
         
-        // Parse JSON string fields from FormData
-        if (parsed.location && typeof parsed.location === 'string') {
-            parsed.location = JSON.parse(parsed.location);
-        }
         if (parsed.amenities && typeof parsed.amenities === 'string') {
             try {
                 parsed.amenities = JSON.parse(parsed.amenities);

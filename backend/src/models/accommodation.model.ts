@@ -16,6 +16,7 @@ const AccommodationSchema: Schema = new Schema<AccommodationDocument>(
         maxGuests: Number,
         rooms: Number,
         bathrooms: Number,
+        pricePerNight: { type: Number, required: true },
         location: {
             lat: { type: Number, required: true },
             lng: { type: Number, required: true },
@@ -39,6 +40,7 @@ const AccommodationSchema: Schema = new Schema<AccommodationDocument>(
 
 export interface IAccommodation extends AccommodationDocument, Document {
     _id: mongoose.Types.ObjectId;
+    pricePerNight: number;
     createdAt: Date;
     updatedAt: Date;
 }
