@@ -11,6 +11,7 @@ export const AccommodationSchema = z.object({
     maxGuests: z.number().optional(),
     rooms: z.number().optional(),
     bathrooms: z.number().optional(),
+    pricePerNight: z.number().min(0, "Price per night is required"),
     location: z.object({
         lat: z.number(),
         lng: z.number(),

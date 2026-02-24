@@ -15,6 +15,7 @@ export const CreateAccommodationDTO = AccommodationSchema.pick({
     availableFrom: true,
     availableUntil: true,
     isActive: true,
+    pricePerNight: true,
 });
 
 export type CreateAccommodationDTO = z.infer<typeof CreateAccommodationDTO>;

@@ -53,8 +53,9 @@ export default function RegisterForm() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Name */}
         <div className="space-y-1">
-          <label className="text-sm font-semibold text-gray-700"> Name</label>
+          <label htmlFor="name" className="text-sm font-semibold text-gray-700"> Name</label>
           <input
+            id="name"
             type="text"
             placeholder="Enter your full name"
             className="w-full px-4 py-3 rounded-xl border border-blue-100 bg-green-50/30 focus:outline-none focus:ring-2 focus:ring-[#00a884]/20 transition-all text-sm"
@@ -67,10 +68,11 @@ export default function RegisterForm() {
 
         {/* Email */}
         <div className="space-y-1">
-          <label className="text-sm font-semibold text-gray-700">
+          <label htmlFor="email" className="text-sm font-semibold text-gray-700">
             Email Address
           </label>
           <input
+            id="email"
             type="email"
             placeholder="Enter your email"
             className="w-full px-4 py-3 rounded-xl border border-blue-100 bg-green-50/30 focus:outline-none focus:ring-2 focus:ring-[#00a884]/20 transition-all text-sm"
@@ -83,11 +85,12 @@ export default function RegisterForm() {
 
         {/* Password */}
         <div className="space-y-1">
-          <label className="text-sm font-semibold text-gray-700">
+          <label htmlFor="password" className="text-sm font-semibold text-gray-700">
             Password
           </label>
           <div className="relative">
             <input
+              id="password"
               type={showPassword ? "text" : "password"}
               placeholder="Enter password"
               className="w-full px-4 py-3 rounded-xl border border-blue-100 bg-green-50/30 focus:outline-none focus:ring-2 focus:ring-[#00a884]/20 transition-all text-sm"
@@ -108,11 +111,12 @@ export default function RegisterForm() {
 
         {/* Confirm Password */}
         <div className="space-y-1">
-          <label className="text-sm font-semibold text-gray-700">
+          <label htmlFor="confirmPassword" className="text-sm font-semibold text-gray-700">
             Confirm Password
           </label>
           <div className="relative">
             <input
+              id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm password"
               className="w-full px-4 py-3 rounded-xl border border-blue-100 bg-green-50/30 focus:outline-none focus:ring-2 focus:ring-[#00a884]/20 transition-all text-sm"

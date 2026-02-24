@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setUser(null);
             router.push("/login");
         } catch (error) {
-            console.error("Logout failed:", error);
+            // Silenced error
         }
     }
 
