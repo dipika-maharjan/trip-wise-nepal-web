@@ -43,7 +43,7 @@ export default function LoginForm() {
       // Redirect based on user role
       startTransition(() => {
         if (res.data?.role === "admin") {
-          router.push("/admin/users");
+          router.push("/admin");
         } else {
           router.push("/user/dashboard");
         }
