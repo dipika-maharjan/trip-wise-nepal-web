@@ -10,7 +10,7 @@ export default function Error({
 }) {
 
      useEffect(() => {
-         console.error(error)
+         // Silenced error
      },[error])
 
     return (
