@@ -7,6 +7,8 @@ import { AccommodationRepository } from "../repositories/accommodation.repositor
 import { CreateBookingDTO, UpdateBookingDTO } from "../dtos/booking.dto";
 import { HttpError } from "../errors/http-error";
 import { TAX_PERCENT, SERVICE_FEE } from "../config";
+import { sendEmail } from "../config/email";
+import { UserService } from "./user.service";
 
 const bookingRepository = new BookingRepository();
 const bookingExtraRepository = new BookingExtraRepository();
@@ -28,6 +30,7 @@ const calculateNights = (checkIn: Date, checkOut: Date): number => {
 };
 
 export class BookingService {
+  private userService = new UserService();
   async createBooking(data: CreateBookingDTO, userId: string) {
     // Create a unique lock key for this room type and date range
     const lockKey = `${data.roomTypeId}:${data.checkIn}:${data.checkOut}`;
@@ -62,6 +65,7 @@ export class BookingService {
       }
 
       const roomType = await roomTypeRepository.getRoomTypeById(
+
         data.roomTypeId,
       );
       if (!roomType || !roomType.isActive) {
@@ -207,6 +211,33 @@ export class BookingService {
       const extras = await bookingExtraRepository.getExtrasByBookingId(
         String(newBooking._id),
       );
+
+      // Send booking confirmation email (all variables are now available)
+      try {
+        const user = await this.userService.getUserById(userId);
+        if (user && user.email && roomType && accommodation && checkIn && checkOut && typeof totalPrice !== 'undefined') {
+          const subject = "Booking Confirmation - Trip Wise Nepal";
+          const html = `
+            <h2>Thank you for your booking!</h2>
+            <p>Dear ${user.name},</p>
+            <p>Your booking at <strong>${accommodation.name}</strong> is confirmed.</p>
+            <ul>
+              <li><strong>Room Type:</strong> ${roomType.name}</li>
+              <li><strong>Check-in:</strong> ${checkIn.toDateString()}</li>
+              <li><strong>Check-out:</strong> ${checkOut.toDateString()}</li>
+              <li><strong>Guests:</strong> ${data.guests}</li>
+              <li><strong>Rooms Booked:</strong> ${data.roomsBooked}</li>
+              <li><strong>Total Price:</strong> Rs${totalPrice}</li>
+            </ul>
+            <p>We look forward to hosting you!</p>
+            <p>Trip Wise Nepal Team</p>
+          `;
+          await sendEmail(user.email, subject, html);
+        }
+      } catch (emailErr) {
+        // Log email error but do not block booking
+        console.error("Failed to send booking confirmation email:", emailErr);
+      }
 
       return {
         booking: newBooking,
@@ -538,6 +569,37 @@ export class BookingService {
         );
       }
 
+      // Send updated booking email
+      try {
+        // Get user info
+        let userId = booking.userId;
+        if (typeof userId === 'object' && userId !== null && '_id' in userId) {
+          userId = userId._id;
+        }
+        const user = await this.userService.getUserById(String(userId));
+        if (user && user.email && roomType && accommodation && checkIn && checkOut && typeof totalPrice !== 'undefined') {
+          const subject = "Booking Updated - Trip Wise Nepal";
+          const html = `
+            <h2>Your booking has been updated!</h2>
+            <p>Dear ${user.name},</p>
+            <p>Your booking at <strong>${accommodation.name}</strong> has been updated. Here are your new details:</p>
+            <ul>
+              <li><strong>Room Type:</strong> ${roomType.name}</li>
+              <li><strong>Check-in:</strong> ${checkIn.toDateString()}</li>
+              <li><strong>Check-out:</strong> ${checkOut.toDateString()}</li>
+              <li><strong>Guests:</strong> ${data.guests}</li>
+              <li><strong>Rooms Booked:</strong> ${data.roomsBooked}</li>
+              <li><strong>Total Price:</strong> Rs${totalPrice}</li>
+            </ul>
+            <p>If you did not request this change, please contact us immediately.</p>
+            <p>Trip Wise Nepal Team</p>
+          `;
+          await sendEmail(user.email, subject, html);
+        }
+      } catch (emailErr) {
+        // Log email error but do not block booking update
+        console.error("Failed to send updated booking email:", emailErr);
+      }
       return updatedBooking;
     } catch (error: Error | any) {
       if (error instanceof HttpError) throw error;
