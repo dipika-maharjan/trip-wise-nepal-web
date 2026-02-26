@@ -16,6 +16,7 @@ export const BookingSchema = z.object({
     serviceFee: z.number().min(0),
     totalPrice: z.number().min(0),
     specialRequest: z.string().optional(),
+    transaction_uuid: z.string().optional(),
     bookingStatus: z.enum(["pending", "confirmed", "cancelled", "completed"]).default("pending"),
     paymentStatus: z.enum(["pending", "paid"]).default("pending"),
 });

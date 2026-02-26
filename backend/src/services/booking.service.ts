@@ -212,7 +212,7 @@ export class BookingService {
         String(newBooking._id),
       );
 
-      // Send booking confirmation email (all variables are now available)
+      // Send booking confirmation email 
       try {
         const user = await this.userService.getUserById(userId);
         if (user && user.email && roomType && accommodation && checkIn && checkOut && typeof totalPrice !== 'undefined') {
@@ -227,7 +227,8 @@ export class BookingService {
               <li><strong>Check-out:</strong> ${checkOut.toDateString()}</li>
               <li><strong>Guests:</strong> ${data.guests}</li>
               <li><strong>Rooms Booked:</strong> ${data.roomsBooked}</li>
-              <li><strong>Total Price:</strong> Rs${totalPrice}</li>
+              <li><strong>Total Price:</strong> Rs ${totalPrice}</li>
+              <li><strong>Special Requests:</strong> ${data.specialRequest ? data.specialRequest : 'None'}</li>
             </ul>
             <p>We look forward to hosting you!</p>
             <p>Trip Wise Nepal Team</p>
@@ -590,6 +591,7 @@ export class BookingService {
               <li><strong>Guests:</strong> ${data.guests}</li>
               <li><strong>Rooms Booked:</strong> ${data.roomsBooked}</li>
               <li><strong>Total Price:</strong> Rs${totalPrice}</li>
+              <li><strong>Special Requests:</strong> ${data.specialRequest ? data.specialRequest : 'None'}</li>
             </ul>
             <p>If you did not request this change, please contact us immediately.</p>
             <p>Trip Wise Nepal Team</p>

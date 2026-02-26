@@ -23,6 +23,7 @@ const BookingSchema: Schema = new Schema<BookingDocument>(
         serviceFee: { type: Number, required: true },
         totalPrice: { type: Number, required: true },
         specialRequest: { type: String },
+        transaction_uuid: { type: String },
         bookingStatus: {
             type: String,
             enum: ["pending", "confirmed", "cancelled", "completed"],
