@@ -74,62 +74,59 @@ export const initiateEsewaPayment = async (req: Request, res: Response) => {
 // GET /api/payment/esewa/success
 export const esewaSuccess = async (req: Request, res: Response) => {
   try {
-    const { amt, oid, refId } = req.query;
-    if (!amt || !oid || !refId) {
+    // Support v2: decode 'data' param if present
+    let product_code, total_amount, transaction_uuid;
+    if (req.query.data) {
+      try {
+        const decoded = JSON.parse(Buffer.from(req.query.data as string, 'base64').toString());
+        product_code = decoded.product_code || process.env.ESEWA_MERCHANT_CODE || 'EPAYTEST';
+        total_amount = decoded.total_amount;
+        transaction_uuid = decoded.transaction_uuid;
+      } catch (err) {
+        return res.status(400).json({ message: 'Invalid data parameter.' });
+      }
+    } else {
+      product_code = req.query.product_code || process.env.ESEWA_MERCHANT_CODE || 'EPAYTEST';
+      total_amount = req.query.total_amount;
+      transaction_uuid = req.query.transaction_uuid;
+    }
+    if (!product_code || !total_amount || !transaction_uuid) {
       return res.status(400).json({ message: 'Missing required query parameters.' });
     }
-    const verifyParams = new URLSearchParams({
-      amt: String(amt),
-      rid: String(refId),
-      pid: String(oid),
-      scd: process.env.ESEWA_MERCHANT_CODE || 'EPAYTEST',
-    });
+    // Call eSewa v2 status API
     const verifyUrl = process.env.ESEWA_VERIFY_URL || 'https://rc.esewa.com.np/api/epay/transaction/status/';
-    const response = await axios.get(`${verifyUrl}?${verifyParams.toString()}`);
-    if (response.data.includes('<response_code>Success</response_code>')) {
-      console.log('eSewa payment callback params:', { amt, oid, refId });
-      // Try to update booking/payment status using bookingId (oid may be transaction_uuid, not _id)
-      // Try both _id and transaction_uuid fields for robustness
-      let updateResult = await BookingModel.findOneAndUpdate(
-        { $or: [ { _id: oid }, { transaction_uuid: oid } ] },
-        { paymentStatus: 'paid', bookingStatus: 'confirmed' },
-        { new: true }
-      );
-      console.log('eSewa payment update result:', updateResult);
-      if (!updateResult) {
-        // Try to extract bookingId from oid if it is in the format booking-<bookingId>-timestamp
-        const match = String(oid).match(/^booking-([a-fA-F0-9]{24})-/);
-        console.log('eSewa payment fallback match:', match);
-        if (match && match[1]) {
-          updateResult = await BookingModel.findOneAndUpdate(
-            { _id: match[1] },
-            { paymentStatus: 'paid', bookingStatus: 'confirmed' },
-            { new: true }
-          );
-          console.log('eSewa payment update fallback result:', updateResult);
-        }
-      }
-      // Always try transaction_uuid match as last resort
-      if (!updateResult) {
-        updateResult = await BookingModel.findOneAndUpdate(
-          { transaction_uuid: oid },
+    try {
+      const response = await axios.get(verifyUrl, {
+        params: {
+          product_code,
+          total_amount,
+          transaction_uuid,
+        },
+      });
+      // Debug log
+      console.log('eSewa v2 status API response:', response.data);
+      if (response.data.status === 'COMPLETE') {
+        // Update booking/payment status
+        let updateResult = await BookingModel.findOneAndUpdate(
+          { transaction_uuid },
           { paymentStatus: 'paid', bookingStatus: 'confirmed' },
           { new: true }
         );
-        console.log('eSewa payment update final transaction_uuid result:', updateResult);
-      }
-      if (updateResult) {
-        // Send payment confirmation email to user
-        await sendPaymentSuccessEmail(updateResult);
-        return res.status(200).json({ message: 'Payment verified and booking updated successfully.' });
+        if (updateResult) {
+          await sendPaymentSuccessEmail(updateResult);
+            // Redirect to booking details page
+            return res.redirect(`http://localhost:3000/user/bookings/${updateResult._id}`);
+        } else {
+          return res.status(200).json({ status: 'PAID', message: 'Payment verified, but booking not found for update.' });
+        }
       } else {
-        console.error('Booking not found for update. Params:', { oid, refId });
-        return res.status(200).json({ message: 'Payment verified, but booking not found for update.' });
+        return res.status(400).json({ status: 'FAILED', message: 'Payment not complete or failed.' });
       }
-    } else {
-      console.error('Payment verification failed. Params:', { amt, oid, refId, response: response.data });
-      return res.status(400).json({ message: 'Payment verification failed.' });
+    } catch (error: any) {
+      console.error('eSewa status API error:', error.response ? error.response.data : error.message);
+      return res.status(400).json({ message: 'Error verifying payment', error });
     }
+    // End of catch block, remove stray code
   } catch (error) {
     return res.status(500).json({ message: 'Error verifying payment', error });
   }
