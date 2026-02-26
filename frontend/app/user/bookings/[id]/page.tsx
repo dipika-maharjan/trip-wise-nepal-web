@@ -35,6 +35,17 @@ export default function BookingDetailPage({ params }: PageProps) {
             toast.error("Invalid booking ID");
             router.push("/user/bookings");
         }
+        // Listen for eSewa redirect with payment success/failure
+        if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            if (
+                url.pathname.endsWith('/payment/success') ||
+                url.pathname.endsWith('/payment/failure')
+            ) {
+                // After payment, always refresh booking details
+                fetchBookingDetails();
+            }
+        }
     }, [resolvedParams.id]);
 
     const fetchBookingDetails = async () => {
@@ -234,7 +245,42 @@ export default function BookingDetailPage({ params }: PageProps) {
                                     })}
                                 </p>
                             </div>
-                        </div>
+                                                </div>
+                                                {/* Pay with eSewa button */}
+                                                {booking.paymentStatus !== 'paid' && (
+                                                    <div className="mt-6 flex justify-end">
+                                                        <button
+                                                            className="bg-[#0c7272] hover:bg-[#0a5555] text-white font-semibold px-6 py-2 rounded shadow"
+                                                            onClick={async () => {
+                                                                const res = await fetch('/api/payment/esewa/initiate', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({ amount: booking.totalPrice, bookingId: booking._id }),
+                                                                });
+                                                                const data = await res.json();
+                                                                if (data.esewaUrl && data.formData) {
+                                                                    // Create and submit a form for POST
+                                                                    const form = document.createElement('form');
+                                                                    form.method = 'POST';
+                                                                    form.action = data.esewaUrl;
+                                                                    Object.entries(data.formData).forEach(([key, value]) => {
+                                                                        const input = document.createElement('input');
+                                                                        input.type = 'hidden';
+                                                                        input.name = key;
+                                                                        input.value = String(value);
+                                                                        form.appendChild(input);
+                                                                    });
+                                                                    document.body.appendChild(form);
+                                                                    form.submit();
+                                                                } else {
+                                                                    alert('Failed to initiate payment');
+                                                                }
+                                                            }}
+                                                        >
+                                                            Pay with eSewa
+                                                        </button>
+                                                    </div>
+                                                )}
                     </div>
                 </div>
             </div>
