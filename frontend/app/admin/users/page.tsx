@@ -168,15 +168,17 @@ export default function UsersPage() {
                                 <tr key={user._id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
-                                            <img
-                                                src={
-                                                    user.imageUrl
-                                                        ? `http://localhost:5050/uploads/${user.imageUrl}`
-                                                        : `http://localhost:5050/uploads/default-profile.png`
-                                                }
-                                                alt={user.name}
-                                                className="w-10 h-10 rounded-full object-cover"
-                                            />
+                                                                                        {user.imageUrl ? (
+                                                                                            <img
+                                                                                                src={`http://localhost:5050/uploads/${user.imageUrl}`}
+                                                                                                alt={user.name}
+                                                                                                className="w-10 h-10 rounded-full object-cover"
+                                                                                            />
+                                                                                        ) : (
+                                                                                            <div className="w-10 h-10 rounded-full bg-[#0c7272] text-white flex items-center justify-center font-bold text-lg uppercase">
+                                                                                                {user.name?.charAt(0) || 'U'}
+                                                                                            </div>
+                                                                                        )}
                                             <div className="ml-4">
                                                 <div className="text-sm font-medium text-gray-900">
                                                     {user.name}

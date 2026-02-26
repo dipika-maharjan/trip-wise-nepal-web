@@ -23,8 +23,8 @@ export default function Footer() {
           <h4 className="font-bold text-lg mb-4">Quick Links</h4>
           <ul className="space-y-2 text-sm text-gray-400">
             <li><Link href="/" className="hover:text-[#ff9f1c]">Home</Link></li>
-            <li><Link href="/map" className="hover:text-[#ff9f1c]">Map</Link></li>
-            <li><Link href="/bookings" className="hover:text-[#ff9f1c]">My Bookings</Link></li>
+            <li><Link href="/accommodations" className="hover:text-[#ff9f1c]">Accommodations</Link></li>
+            <li><Link href="/user/bookings" className="hover:text-[#ff9f1c]">My Bookings</Link></li>
           </ul>
         </div>
 
@@ -41,15 +41,15 @@ export default function Footer() {
         <div>
           <h4 className="font-bold text-lg mb-4">Follow Us</h4>
           <div className="flex gap-4">
-            <button className="p-2 bg-white/10 rounded-full hover:bg-[#ff9f1c] transition-colors">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/10 rounded-full hover:bg-[#ff9f1c] transition-colors">
               <Facebook size={20} />
-            </button>
-            <button className="p-2 bg-white/10 rounded-full hover:bg-[#ff9f1c] transition-colors">
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/10 rounded-full hover:bg-[#ff9f1c] transition-colors">
               <Instagram size={20} />
-            </button>
-            <button className="p-2 bg-white/10 rounded-full hover:bg-[#ff9f1c] transition-colors">
+            </a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/10 rounded-full hover:bg-[#ff9f1c] transition-colors">
               <Twitter size={20} />
-            </button>
+            </a>
           </div>
         </div>
       </div>
