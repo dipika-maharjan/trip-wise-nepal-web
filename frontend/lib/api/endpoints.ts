@@ -52,6 +52,9 @@ export const API = {
     UPDATE: "/api/bookings",
     DELETE: "/api/bookings",
   },
+  PAYMENT: {
+    ESEWA_INITIATE: "/api/payment/esewa/initiate",
+  },
 
   REVIEW: {
     CREATE: "/api/reviews",
