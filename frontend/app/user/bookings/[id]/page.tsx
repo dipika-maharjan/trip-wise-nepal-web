@@ -248,7 +248,7 @@ export default function BookingDetailPage({ params }: PageProps) {
                                                 </div>
                                                 {/* Pay with eSewa button */}
                                                 {booking.paymentStatus !== 'paid' && (
-                                                    <div className="mt-6 flex justify-end">
+                                                    <div className="mt-6 flex flex-col items-end gap-2">
                                                         <button
                                                             className="bg-[#0c7272] hover:bg-[#0a5555] text-white font-semibold px-6 py-2 rounded shadow"
                                                             onClick={async () => {
@@ -279,6 +279,17 @@ export default function BookingDetailPage({ params }: PageProps) {
                                                         >
                                                             Pay with eSewa
                                                         </button>
+                                                        {booking.bookingStatus === 'pending' && booking.expiresAt && (
+                                                                                                                    <div className="flex items-center justify-end mt-2">
+                                                                                                                        <div className="flex items-center gap-2 bg-yellow-50 border-l-4 border-yellow-400 px-3 py-2 rounded shadow-sm max-w-xs">
+                                                                                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+                                                                                                                            <span className="text-yellow-800 text-xs font-semibold">
+                                                                                                                                <span className="font-bold">Note:</span> Your booking will expire <span className="underline">2 hours after creation</span>.<br />
+                                                                                                                                <span className="block mt-1">Expires at: <span className="font-mono">{new Date(booking.expiresAt).toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' })}</span></span>
+                                                                                                                            </span>
+                                                                                                                        </div>
+                                                                                                                    </div>
+                                                        )}
                                                     </div>
                                                 )}
                     </div>

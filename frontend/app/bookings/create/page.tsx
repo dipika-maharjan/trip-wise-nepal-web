@@ -6,6 +6,7 @@ import { getAccommodationById } from "@/lib/api/accommodation";
 import { getRoomTypesByAccommodation } from "@/lib/api/roomType";
 import { getOptionalExtrasByAccommodation } from "@/lib/api/optionalExtra";
 import { handleCreateBooking } from "@/lib/actions/booking-action";
+import { initiateEsewaPayment } from "@/lib/api/payment";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Users, DoorOpen, Plus, Minus } from "lucide-react";
@@ -190,7 +191,36 @@ export default function CreateBookingPage() {
 
       const response = await handleCreateBooking(payload);
 
-      if (response.success) {
+      if (response.success && response.data?.booking?._id && response.data?.booking?.totalPrice) {
+        // Initiate eSewa payment
+        const bookingId = response.data.booking._id;
+        const amount = response.data.booking.totalPrice;
+        try {
+          const esewaRes = await initiateEsewaPayment(amount, bookingId);
+          if (esewaRes && esewaRes.esewaUrl && esewaRes.formData) {
+            // Create and submit a form to redirect to eSewa
+            const form = document.createElement('form');
+            form.action = esewaRes.esewaUrl;
+            form.method = 'POST';
+            form.style.display = 'none';
+            Object.entries(esewaRes.formData).forEach(([key, value]) => {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = key;
+              input.value = value as string;
+              form.appendChild(input);
+            });
+            document.body.appendChild(form);
+            form.submit();
+          } else {
+            toast.error("Failed to initiate eSewa payment");
+            router.push("/user/bookings");
+          }
+        } catch (err: any) {
+          toast.error(err.message || "Failed to initiate eSewa payment");
+          router.push("/user/bookings");
+        }
+      } else if (response.success) {
         toast.success("Booking created successfully!");
         router.push("/user/bookings");
       } else {
@@ -304,9 +334,45 @@ export default function CreateBookingPage() {
                 <textarea value={specialRequest} onChange={e => setSpecialRequest(e.target.value)} rows={3} placeholder="Any special requests or requirements..." className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0c7272]" />
               </div>
 
-              <button type="submit" disabled={submitting || !selectedRoomType || nights <= 0} className="w-full bg-[#0c7272] text-white py-3 rounded-lg font-semibold hover:bg-[#134e4a] disabled:opacity-50 disabled:cursor-not-allowed">
-                {submitting ? "Processing..." : "Confirm Booking"}
-              </button>
+              <div className="flex flex-col gap-3 mt-4">
+                <button type="submit" disabled={submitting || !selectedRoomType || nights <= 0} className="w-full bg-[#0c7272] text-white py-3 rounded-lg font-semibold hover:bg-[#134e4a] disabled:opacity-50 disabled:cursor-not-allowed">
+                  {submitting ? "Processing..." : "Confirm Booking & Pay with eSewa"}
+                </button>
+                <div className="mb-2 text-sm text-yellow-700 bg-yellow-100 border-l-4 border-yellow-400 p-2 rounded">
+                  <strong>Note:</strong> If you choose Pay Later, your booking will be reserved for <b>2 hours</b> only. If payment is not completed within this period, your booking will be automatically cancelled and the room released.
+                </div>
+                <button type="button" disabled={submitting || !selectedRoomType || nights <= 0} className="w-full bg-gray-300 text-[#0c7272] py-3 rounded-lg font-semibold hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={async () => {
+                    setSubmitting(true);
+                    try {
+                      const extras = Object.entries(selectedExtras).map(([extraId, qty]) => ({ extraId, quantity: qty }));
+                      const payload = {
+                        accommodationId,
+                        roomTypeId: selectedRoomType,
+                        checkIn: new Date(checkIn).toISOString(),
+                        checkOut: new Date(checkOut).toISOString(),
+                        guests,
+                        roomsBooked,
+                        extras,
+                        specialRequest: specialRequest.trim() || undefined,
+                        paymentStatus: "pending",
+                      };
+                      const response = await handleCreateBooking(payload);
+                      if (response.success) {
+                        toast.success("Booking created successfully! You can pay later from your booking details.");
+                        router.push("/user/bookings");
+                      } else {
+                        toast.error(response.message || "Booking failed");
+                      }
+                    } catch (error: any) {
+                      toast.error(error.message || "Failed to create booking");
+                    } finally {
+                      setSubmitting(false);
+                    }
+                  }}>
+                  Confirm Booking & Pay Later
+                </button>
+              </div>
             </form>
           </div>
 
