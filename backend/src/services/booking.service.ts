@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import cron from "node-cron";
 import { BookingRepository } from "../repositories/booking.repository";
 import { BookingExtraRepository } from "../repositories/bookingExtra.repository";
 import { RoomTypeRepository } from "../repositories/roomType.repository";
@@ -179,6 +180,11 @@ export class BookingService {
         basePriceTotal + extrasTotal + tax + serviceFee,
       );
 
+      // Set expiry for pay-later bookings (2 hours from now)
+      let expiresAt = null;
+      if (!data.paymentStatus || data.paymentStatus === "pending") {
+        expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours from now
+      }
       const newBooking = await bookingRepository.createBooking({
         userId: new mongoose.Types.ObjectId(userId),
         accommodationId: accommodation._id,
@@ -196,7 +202,26 @@ export class BookingService {
         specialRequest: data.specialRequest,
         bookingStatus: "pending",
         paymentStatus: data.paymentStatus ?? "pending",
+        expiresAt,
       });
+// Cron job: runs every 5 minutes to cancel expired bookings and release rooms if needed
+cron.schedule('*/5 * * * *', async () => {
+  const now = new Date();
+  const BookingModel = require('../models/booking.model').BookingModel;
+  const expiredBookings = await BookingModel.find({
+    bookingStatus: 'pending',
+    expiresAt: { $lte: now },
+  });
+  if (expiredBookings.length > 0) {
+    for (const booking of expiredBookings) {
+      booking.bookingStatus = 'cancelled';
+      await booking.save();
+      // Room release logic placeholder: if you maintain a separate room availability cache, update it here
+      // For now, room availability is recalculated on each booking request, so no action needed
+    }
+    console.log(`[Booking Expiry] Cancelled ${expiredBookings.length} expired bookings at`, now);
+  }
+});
 
       if (bookingExtrasPayload.length > 0) {
         await bookingExtraRepository.createBookingExtras(
@@ -354,6 +379,10 @@ export class BookingService {
           "Only pending or confirmed bookings can be cancelled",
         );
       }
+      let paidWarning = null;
+      if (booking.paymentStatus === "paid") {
+        paidWarning = "You have already completed payment. Cancellation will not refund your payment.";
+      }
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -368,7 +397,12 @@ export class BookingService {
         id,
         "cancelled",
       );
-      return updatedBooking;
+      // Room release logic placeholder: if you maintain a separate room availability cache, update it here
+      // For now, room availability is recalculated on each booking request, so no action needed
+      // If you add a cache or counter, decrement here
+      return paidWarning
+        ? { ...updatedBooking, paidWarning }
+        : updatedBooking;
     } catch (error: Error | any) {
       if (error instanceof HttpError) throw error;
       throw new HttpError(500, error.message || "Failed to cancel booking");
@@ -408,6 +442,9 @@ export class BookingService {
           400,
           "Cannot edit a cancelled or completed booking",
         );
+      }
+      if (booking.paymentStatus === "paid") {
+        throw new HttpError(400, "Cannot update booking after payment is completed");
       }
 
       const today = new Date();

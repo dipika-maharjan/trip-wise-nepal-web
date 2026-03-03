@@ -13,6 +13,24 @@ export const initiateEsewaPayment = async (req: Request, res: Response) => {
       console.log('Missing amount or bookingId:', { amount, bookingId });
       return res.status(400).json({ message: 'Amount and bookingId are required.' });
     }
+
+    // Fetch booking and check status/expiry
+    const booking = await BookingModel.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found.' });
+    }
+    if (booking.bookingStatus === 'cancelled') {
+      return res.status(400).json({ message: 'This booking is cancelled and cannot be paid.' });
+    }
+    if (booking.paymentStatus === 'paid') {
+      return res.status(400).json({ message: 'This booking is already paid.' });
+    }
+    if (booking.expiresAt && booking.expiresAt < new Date()) {
+      return res.status(400).json({ message: 'This booking has expired and cannot be paid.' });
+    }
+    if (booking.checkIn < new Date()) {
+      return res.status(400).json({ message: 'Check-in date is in the past. Payment is not allowed.' });
+    }
       // Use only required fields for signature and signed_field_names (per eSewa v2 docs)
       const total_amount = String(amount);
       // Use only alphanumeric and hyphen for transaction_uuid
@@ -74,6 +92,14 @@ export const initiateEsewaPayment = async (req: Request, res: Response) => {
 // GET /api/payment/esewa/success
 export const esewaSuccess = async (req: Request, res: Response) => {
   try {
+    // Log incoming request for debugging (web vs Flutter)
+    console.log('Payment success request received:', {
+      query: req.query,
+      body: req.body,
+      headers: req.headers,
+      method: req.method,
+      url: req.originalUrl
+    });
     // Support v2: decode 'data' param if present
     let product_code, total_amount, transaction_uuid;
     if (req.query.data) {
@@ -94,6 +120,12 @@ export const esewaSuccess = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Missing required query parameters.' });
     }
     // Call eSewa v2 status API
+    // Log parameters sent to eSewa status API
+    console.log('Calling eSewa status API with:', {
+      product_code,
+      total_amount,
+      transaction_uuid
+    });
     const verifyUrl = process.env.ESEWA_VERIFY_URL || 'https://rc.esewa.com.np/api/epay/transaction/status/';
     try {
       const response = await axios.get(verifyUrl, {
@@ -106,20 +138,36 @@ export const esewaSuccess = async (req: Request, res: Response) => {
       // Debug log
       console.log('eSewa v2 status API response:', response.data);
       if (response.data.status === 'COMPLETE') {
-        // Update booking/payment status
-        let updateResult = await BookingModel.findOneAndUpdate(
-          { transaction_uuid },
-          { paymentStatus: 'paid', bookingStatus: 'confirmed' },
-          { new: true }
-        );
-        if (updateResult) {
-          await sendPaymentSuccessEmail(updateResult);
-            // Redirect to booking details page
-            return res.redirect(`http://localhost:3000/user/bookings/${updateResult._id}`);
-        } else {
+        // Find booking first for explicit logging
+        const booking = await BookingModel.findOne({ transaction_uuid });
+        if (!booking) {
+          console.log('Booking not found for transaction_uuid:', transaction_uuid);
           return res.status(200).json({ status: 'PAID', message: 'Payment verified, but booking not found for update.' });
         }
+        if (
+          booking.bookingStatus === 'cancelled' ||
+          (booking.expiresAt !== null && booking.expiresAt < new Date())
+        ) {
+          console.log('Booking expired or cancelled:', {
+            transaction_uuid,
+            bookingStatus: booking.bookingStatus,
+            expiresAt: booking.expiresAt
+          });
+          return res.status(400).json({ message: 'Booking expired or cancelled' });
+        }
+        booking.paymentStatus = 'paid';
+        booking.bookingStatus = 'confirmed';
+        await booking.save();
+        console.log('Booking updated:', {
+          transaction_uuid,
+          paymentStatus: booking.paymentStatus,
+          bookingStatus: booking.bookingStatus
+        });
+        await sendPaymentSuccessEmail(booking);
+        // Redirect to booking details page
+        return res.redirect(`http://localhost:3000/user/bookings/${booking._id}`);
       } else {
+        console.log('Payment not complete or failed for transaction_uuid:', transaction_uuid);
         return res.status(400).json({ status: 'FAILED', message: 'Payment not complete or failed.' });
       }
     } catch (error: any) {

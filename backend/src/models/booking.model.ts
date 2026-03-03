@@ -29,6 +29,10 @@ const BookingSchema: Schema = new Schema<BookingDocument>(
             enum: ["pending", "confirmed", "cancelled", "completed"],
             default: "pending",
         },
+        expiresAt: {
+            type: Date,
+            default: null,
+        },
         paymentStatus: {
             type: String,
             enum: ["pending", "paid"],
@@ -42,10 +46,12 @@ BookingSchema.index({ checkIn: 1, checkOut: 1 });
 BookingSchema.index({ accommodationId: 1 });
 BookingSchema.index({ roomTypeId: 1 });
 
+
 export interface IBooking extends BookingDocument, Document {
     _id: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
+    expiresAt: Date | null;
 }
 
 export const BookingModel = mongoose.model<IBooking>("Booking", BookingSchema);
