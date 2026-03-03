@@ -379,6 +379,10 @@ cron.schedule('*/5 * * * *', async () => {
           "Only pending or confirmed bookings can be cancelled",
         );
       }
+      let paidWarning = null;
+      if (booking.paymentStatus === "paid") {
+        paidWarning = "You have already completed payment. Cancellation will not refund your payment.";
+      }
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -396,7 +400,9 @@ cron.schedule('*/5 * * * *', async () => {
       // Room release logic placeholder: if you maintain a separate room availability cache, update it here
       // For now, room availability is recalculated on each booking request, so no action needed
       // If you add a cache or counter, decrement here
-      return updatedBooking;
+      return paidWarning
+        ? { ...updatedBooking, paidWarning }
+        : updatedBooking;
     } catch (error: Error | any) {
       if (error instanceof HttpError) throw error;
       throw new HttpError(500, error.message || "Failed to cancel booking");
@@ -436,6 +442,9 @@ cron.schedule('*/5 * * * *', async () => {
           400,
           "Cannot edit a cancelled or completed booking",
         );
+      }
+      if (booking.paymentStatus === "paid") {
+        throw new HttpError(400, "Cannot update booking after payment is completed");
       }
 
       const today = new Date();

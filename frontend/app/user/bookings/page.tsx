@@ -26,6 +26,8 @@ interface Booking {
 export default function MyBookingsPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
+    // Modal state for paid cancellation warning
+    const [paidWarningModal, setPaidWarningModal] = useState<{ id: string; name: string } | null>(null);
     const [error, setError] = useState("");
     const [showCancelled, setShowCancelled] = useState(false);
     const { user, isAuthenticated, loading: authLoading } = useAuth();
@@ -66,6 +68,13 @@ export default function MyBookingsPage() {
 
     const handleCancel = async (bookingId: string, accommodationName: string) => {
         if (!confirm(`Are you sure you want to cancel your booking for ${accommodationName}?`)) {
+            return;
+        }
+
+        // Find the booking to check payment status
+        const booking = bookings.find(b => b._id === bookingId);
+        if (booking?.paymentStatus === "paid") {
+            setPaidWarningModal({ id: bookingId, name: accommodationName });
             return;
         }
 
@@ -233,6 +242,51 @@ export default function MyBookingsPage() {
                     )}
                 </div>
             )}
+            {/* Paid cancellation warning modal */}
+                {paidWarningModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                        <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+                            <div className="flex items-center gap-2 mb-4">
+                                <XCircle size={24} className="text-red-600" />
+                                <span className="text-lg font-semibold text-red-700">Payment Already Completed</span>
+                            </div>
+                            <div className="mb-4 text-gray-700">
+                                <span className="font-bold block mb-1">You have already completed payment for this booking.</span>
+                                <span className="text-red-600 block mb-2">Cancelling will <b>not refund</b> your payment.</span>
+                            </div>
+                            <div className="mb-6 text-gray-600">
+                                Do you still want to cancel your booking for <span className="font-semibold">{paidWarningModal.name}</span>?
+                            </div>
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                    onClick={() => setPaidWarningModal(null)}
+                                >
+                                    No, Keep Booking
+                                </button>
+                                <button
+                                    className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                                    onClick={async () => {
+                                        try {
+                                            const response = await cancelBooking(paidWarningModal.id);
+                                            if (response.success) {
+                                                toast.success("Booking cancelled successfully");
+                                                fetchBookings();
+                                            }
+                                        } catch (err: any) {
+                                            toast.error(err.message || "Failed to cancel booking");
+                                        } finally {
+                                            setPaidWarningModal(null);
+                                        }
+                                    }}
+                                >
+                                    Yes, Cancel Anyway
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                )}
         </div>
     );
 }
