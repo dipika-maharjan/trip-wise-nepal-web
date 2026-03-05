@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterData, registerSchema } from "../schema";
 import { useRouter } from "next/navigation";
 import { handleRegister } from "@/lib/actions/auth-action";
+import { toast } from "react-toastify";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -36,11 +37,13 @@ export default function RegisterForm() {
       if (!res.success) {
         throw new Error(res.message || "Registration failed");
       }
+      toast.success("Registration successful! You can now log in.");
       startTransition(() => {
         router.push("/login");
       });
     } catch (err: Error | any) {
       setError(err.message || "Registration failed");
+      toast.error(err.message || "Registration failed");
     }
   };
 
