@@ -15,6 +15,7 @@ export default function CreateAccommodationForm() {
         name: "",
         address: "",
         overview: "",
+        pricePerNight: "",
         lat: "",
         lng: "",
         mapUrl: "",
@@ -84,6 +85,11 @@ export default function CreateAccommodationForm() {
             return;
         }
 
+        if (!formData.pricePerNight || Number(formData.pricePerNight) <= 0) {
+            toast.error("Please provide a valid price per night");
+            return;
+        }
+
         if (!formData.lat || !formData.lng) {
             toast.error("Please provide location coordinates");
             return;
@@ -130,6 +136,7 @@ export default function CreateAccommodationForm() {
             formDataToSend.append('name', formData.name);
             formDataToSend.append('address', formData.address);
             formDataToSend.append('overview', formData.overview);
+            formDataToSend.append('pricePerNight', formData.pricePerNight);
             formDataToSend.append('location', JSON.stringify({
                 lat: Number(formData.lat),
                 lng: Number(formData.lng),
@@ -218,6 +225,23 @@ export default function CreateAccommodationForm() {
                             onChange={handleInputChange}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0c7272]"
                             placeholder="e.g. Lodge Name"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Price Per Night (Rs) <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="number"
+                            name="pricePerNight"
+                            value={formData.pricePerNight}
+                            onChange={handleInputChange}
+                            min="0"
+                            step="0.01"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0c7272]"
+                            placeholder="e.g. 2500"
                             required
                         />
                     </div>

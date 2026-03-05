@@ -24,6 +24,22 @@ export class AccommodationController {
             }
         }
         
+        // Handle location - may come as JSON string from form-data
+        if (parsed.location && typeof parsed.location === 'string') {
+            try {
+                const parsedLocation = JSON.parse(parsed.location);
+                // Ensure it has the expected shape; extra fields will be ignored by Zod
+                parsed.location = {
+                    lat: Number(parsedLocation.lat),
+                    lng: Number(parsedLocation.lng),
+                    address: parsedLocation.address,
+                };
+            } catch (e) {
+                // If parsing fails, unset location so validation can surface a clear error
+                parsed.location = undefined;
+            }
+        }
+        
         // Handle images - can be string, array of strings, or array with JSON at end
         if (parsed.images) {
             if (typeof parsed.images === 'string') {
@@ -67,7 +83,7 @@ export class AccommodationController {
         }
         
         // Convert price to number
-        if (parsed.pricePerNight && typeof parsed.pricePerNight === 'string') {
+        if (typeof parsed.pricePerNight === 'string' && parsed.pricePerNight.trim() !== '') {
             parsed.pricePerNight = Number(parsed.pricePerNight);
         }
         
