@@ -50,10 +50,14 @@ export default function AdminBookingsPage() {
 
     // Search filter
     const filteredBookings = visibleBookings.filter((booking) => {
-        const guestName = typeof booking.userId === 'object' ? booking.userId.name : '';
-        const guestEmail = typeof booking.userId === 'object' ? booking.userId.email : '';
-        const accommodationName = typeof booking.accommodationId === 'object' ? booking.accommodationId.name : '';
-        const roomTypeName = typeof booking.roomTypeId === 'object' ? booking.roomTypeId.name : '';
+        const guestName = booking.userId && typeof booking.userId === 'object' ? booking.userId.name ?? '' : '';
+        const guestEmail = booking.userId && typeof booking.userId === 'object' ? booking.userId.email ?? '' : '';
+        const accommodationName = booking.accommodationId && typeof booking.accommodationId === 'object'
+            ? booking.accommodationId.name ?? ''
+            : '';
+        const roomTypeName = booking.roomTypeId && typeof booking.roomTypeId === 'object'
+            ? booking.roomTypeId.name ?? ''
+            : '';
         return (
             guestName.toLowerCase().includes(search.toLowerCase()) ||
             guestEmail.toLowerCase().includes(search.toLowerCase()) ||
@@ -258,21 +262,25 @@ export default function AdminBookingsPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="text-sm font-medium text-gray-900">
-                                            {typeof booking.userId === 'object' ? booking.userId.name : 'N/A'}
+                                            {booking.userId && typeof booking.userId === 'object'
+                                                ? booking.userId.name ?? 'N/A'
+                                                : 'N/A'}
                                         </div>
                                         <div className="text-sm text-gray-500">
-                                            {typeof booking.userId === 'object' ? booking.userId.email : ''}
+                                            {booking.userId && typeof booking.userId === 'object'
+                                                ? booking.userId.email ?? ''
+                                                : ''}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="text-sm font-medium text-gray-900">
-                                            {typeof booking.accommodationId === 'object' 
-                                                ? booking.accommodationId.name 
+                                            {booking.accommodationId && typeof booking.accommodationId === 'object'
+                                                ? booking.accommodationId.name ?? 'N/A'
                                                 : 'N/A'}
                                         </div>
                                         <div className="text-sm text-gray-500">
-                                            {typeof booking.roomTypeId === 'object' 
-                                                ? booking.roomTypeId.name 
+                                            {booking.roomTypeId && typeof booking.roomTypeId === 'object'
+                                                ? booking.roomTypeId.name ?? 'N/A'
                                                 : 'N/A'}
                                         </div>
                                     </td>
